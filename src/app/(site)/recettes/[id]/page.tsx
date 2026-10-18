@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton } from "@/components/AdminActions";
+import { BackLink } from "@/components/BackLink";
 import { CopyButton } from "@/components/CopyButton";
 import { RecipeView } from "@/components/RecipeView";
 import { buildEditPrompt } from "@/lib/recipe/prompts";
@@ -28,6 +29,7 @@ export default async function PageRecette({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-5xl space-y-5 px-4 py-6">
+      <BackLink />
       {row.status === "pending" && (
         <p className="info">
           Cette recette est en attente de validation : elle n’apparaît pas encore sur la liste.

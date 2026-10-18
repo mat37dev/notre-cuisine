@@ -1,40 +1,22 @@
 @import "tailwindcss";
 
-/* Thème « cuisine » : crème, terracotta et herbes. Clair par défaut, brun chaud la nuit. */
+/* Thème « cuisine » : un seul thème clair, chaud et marron (pas de mode sombre automatique). */
 :root {
-  --fond: #fbf5ea;
-  --papier: #fffdf8;
-  --encre: #2f2418;
-  --muted: #7b6955;
-  --ligne: #ead9bf;
-  --brand: #c2410c;
-  --brand-fort: #9a3412;
-  --brand-doux: #fde7d3;
+  color-scheme: light;
+  --fond: #ecdcc0;
+  --papier: #f8eddb;
+  --encre: #3a2312;
+  --muted: #6b5238;
+  --ligne: #d4b98f;
+  --brand: #a3400e;
+  --brand-fort: #7f330b;
+  --brand-doux: #f5d9b4;
   --sur-brand: #ffffff;
-  --herbe: #4d7c3a;
-  --beurre: #fcefc2;
-  --danger: #b42318;
-  --danger-doux: #fde4e1;
-  --ombre: 0 1px 2px rgb(60 36 12 / 0.06), 0 6px 18px rgb(60 36 12 / 0.07);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fond: #1b1410;
-    --papier: #251c16;
-    --encre: #f4eadb;
-    --muted: #b9a78f;
-    --ligne: #3b2d22;
-    --brand: #f0814d;
-    --brand-fort: #f6a074;
-    --brand-doux: #3d2417;
-    --sur-brand: #2a1308;
-    --herbe: #8fbf73;
-    --beurre: #3b3115;
-    --danger: #ff8a7a;
-    --danger-doux: #3b1b17;
-    --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
-  }
+  --herbe: #4f6f35;
+  --beurre: #f6e2a4;
+  --danger: #a3281c;
+  --danger-doux: #f7d9d3;
+  --ombre: 0 1px 2px rgb(70 38 10 / 0.08), 0 6px 18px rgb(70 38 10 / 0.1);
 }
 
 @theme inline {

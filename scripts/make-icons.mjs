@@ -3,7 +3,7 @@
 import { writeFileSync } from "node:fs";
 import sharp from "sharp";
 
-const ORANGE = "#ea580c";
+const ORANGE = "#a3400e";
 // Une casserole avec sa vapeur, centrée vers (256, 251) dans un carré de 512.
 const CASSEROLE = `
   <g fill="#fff">
