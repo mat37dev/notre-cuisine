@@ -228,3 +228,24 @@ describe("erreurs en français", () => {
     }
   });
 });
+
+describe("textes hostiles (un visiteur peut envoyer n'importe quoi)", () => {
+  test("des dizaines de milliers d'accolades ouvertes : réponse immédiate, pas de calcul interminable", () => {
+    const debut = Date.now();
+    const r = parseRecipeBlock("{".repeat(60_000));
+    expect(Date.now() - debut).toBeLessThan(1500);
+    expect(r).toEqual({ ok: false, errors: ["Je ne trouve pas de recette dans ce texte."] });
+  });
+
+  test("accolades ouvertes au début puis une vraie recette plus loin : la recette est trouvée", () => {
+    const r = parseRecipeBlock("{ { { voilà : " + JSON.stringify(base) + " fin.");
+    expect(r.ok).toBe(true);
+  });
+
+  test("JSON imbriqué à l'extrême : pas d'exception, simplement pas de recette", () => {
+    const profond = "[".repeat(50_000) + "]".repeat(50_000);
+    const texte = "```json\n" + profond + "\n```";
+    expect(() => parseRecipeBlock(texte)).not.toThrow();
+    expect(parseRecipeBlock(texte).ok).toBe(false);
+  });
+});

@@ -117,3 +117,28 @@ describe("AddRecipeForm : envoi", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Impossible de joindre le site"));
   });
 });
+
+describe("AddRecipeForm : l'aperçu suit le texte", () => {
+  test("coller une autre recette remet l'aperçu à ses propres portions (pas celles de la précédente)", async () => {
+    const user = userEvent.setup();
+    render(<AddRecipeForm />);
+    const zone = screen.getByRole("textbox", { name: "Recette à envoyer" });
+    await user.click(zone);
+    await user.paste(bloc(EXEMPLE_RECETTE)); // 4 personnes, 400 g de tomates
+    expect(screen.getByLabelText("Nombre de personnes")).toHaveTextContent("4");
+    // « Coller depuis le presse-papiers » remplace directement le texte, sans passer par une zone vide
+    await navigator.clipboard.writeText(
+      bloc({
+        titre: "Petite salade",
+        portions: 2,
+        categorie: "salade",
+        ingredients: [{ id: "tomates", nom: "tomates", quantite: 100, unite: "g" }],
+        etapes: [{ texte: "Couper {{tomates}}." }],
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Coller depuis le presse-papiers" }));
+    expect(await screen.findByRole("heading", { name: "Petite salade" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Nombre de personnes")).toHaveTextContent("2");
+    expect(screen.getByText("100 g")).toBeInTheDocument();
+  });
+});

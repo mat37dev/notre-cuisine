@@ -62,8 +62,12 @@ const FERMETURES: Record<string, string> = { '"': '"', "“": "”", "„": "”
 /** Sous-textes `{ ... }` de premier niveau (accolades équilibrées, chaînes respectées). */
 function objetsEquilibres(texte: string): string[] {
   const trouves: string[] = [];
+  // Chaque accolade jamais refermée oblige à relire tout le reste du texte : on abandonne après
+  // quelques essais ratés, sinon un long texte d'accolades ouvertes occuperait le serveur très longtemps.
+  const ESSAIS_RATES_MAX = 10;
+  let rates = 0;
   let i = 0;
-  while (i < texte.length) {
+  while (i < texte.length && rates < ESSAIS_RATES_MAX) {
     if (texte[i] !== "{") {
       i++;
       continue;
@@ -86,6 +90,7 @@ function objetsEquilibres(texte: string): string[] {
       }
     }
     if (fin === -1) {
+      rates++;
       i++;
     } else {
       trouves.push(texte.slice(i, fin + 1));
@@ -114,16 +119,21 @@ function ressembleARecette(v: unknown): v is Obj {
 function trouverRecette(texte: string): Obj | null {
   const candidats: string[] = [];
   for (const bloc of blocsDeCode(texte)) {
-    candidats.push(bloc.trim(), ...objetsEquilibres(bloc));
+    candidats.push(bloc.trim());
+    for (const o of objetsEquilibres(bloc)) candidats.push(o);
   }
-  candidats.push(...objetsEquilibres(texte));
+  for (const o of objetsEquilibres(texte)) candidats.push(o);
   for (const c of candidats) {
-    let v = canon(lireJson(c));
-    if (estObjet(v)) {
-      const interne = v.recette ?? v.recipe;
-      if (ressembleARecette(interne)) v = interne;
+    try {
+      let v = canon(lireJson(c));
+      if (estObjet(v)) {
+        const interne = v.recette ?? v.recipe;
+        if (ressembleARecette(interne)) v = interne;
+      }
+      if (ressembleARecette(v)) return v;
+    } catch {
+      // JSON imbriqué à l'extrême (dépassement de pile) : ce candidat n'est pas une recette
     }
-    if (ressembleARecette(v)) return v;
   }
   return null;
 }

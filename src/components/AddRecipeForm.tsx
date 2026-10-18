@@ -160,7 +160,7 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
             </ul>
           )}
           <section aria-label="Aperçu" className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-            <RecipeView recipe={lecture.recipe} />
+            <RecipeView key={texte} recipe={lecture.recipe} />
           </section>
         </>
       )}

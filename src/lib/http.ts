@@ -5,7 +5,14 @@ export function cookieValue(header: string | null, name: string): string | undef
   if (!header) return undefined;
   for (const part of header.split(";")) {
     const i = part.indexOf("=");
-    if (i > 0 && part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+    if (i > 0 && part.slice(0, i).trim() === name) {
+      const brut = part.slice(i + 1).trim();
+      try {
+        return decodeURIComponent(brut);
+      } catch {
+        return brut; // valeur mal encodée : un jeton inconnu, donc simple visiteur
+      }
+    }
   }
   return undefined;
 }

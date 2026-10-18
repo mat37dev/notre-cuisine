@@ -52,7 +52,7 @@ npm install
 npm run invite -- --role admin --name Mathieu --label "Téléphone de Mathieu"
 ```
 
-Le script affiche un lien valable 7 jours, à usage unique. **Ouvre-le sur ton téléphone** : l'appareil est reconnu (pour plus d'un an) et le menu « Admin » apparaît. Pour un second appareil (ton PC), va dans **Admin → Inviter un autre appareil**.
+Le script affiche un lien valable 7 jours, à usage unique. **Ouvre-le sur ton téléphone** et appuie sur **Reconnaître cet appareil** : l'appareil est reconnu (pour plus d'un an) et le menu « Admin » apparaît. (Le bouton évite qu'un aperçu de messagerie utilise le lien à ta place.) Pour un second appareil (ton PC), va dans **Admin → Inviter un autre appareil**.
 
 Si tu perds ton téléphone, relance la commande ci-dessus : elle crée un nouveau profil administrateur, et tu retires l'ancien appareil depuis l'ancien profil dans la page Admin.
 
@@ -63,7 +63,7 @@ Ouvre le site dans Chrome, menu ⋮ → **Installer l'application** (ou **Ajoute
 ## 5. Inviter ta copine
 
 1. Page **Admin → Inviter quelqu'un**, écris son prénom, **Créer le lien d'invitation**.
-2. Envoie-lui le lien (le bouton « Copier le lien » ou le QR code). Elle l'ouvre **une fois** sur son téléphone : son appareil est reconnu, ses recettes seront publiées tout de suite.
+2. Envoie-lui le lien (le bouton « Copier le lien » ou le QR code). Elle l'ouvre **une fois** sur son téléphone et appuie sur **Reconnaître cet appareil** : son appareil est reconnu, ses recettes seront publiées tout de suite.
 3. Elle installe l'appli comme au point 4.
 4. Elle ouvre **Instructions pour Claude** (page `/claude`), appuie sur **Copier les instructions**, et les colle au début de sa conversation avec Claude (ou dans les instructions d'un Projet).
 
