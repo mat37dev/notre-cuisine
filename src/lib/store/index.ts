@@ -1,3 +1,4 @@
+import { hashToken } from "../auth";
 import { EXEMPLE_RECETTE } from "../recipe/prompts";
 import { MemoryStore } from "./memory";
 import { SupabaseStore } from "./supabase";
@@ -12,7 +13,14 @@ const globale = globalThis as typeof globalThis & { __ncDevStore?: Store };
 function baseDeDeveloppement(): Store {
   if (!globale.__ncDevStore) {
     const store = new MemoryStore();
-    void store.insertRecipe({ status: "published", authorId: null, recipe: EXEMPLE_RECETTE });
+    void (async () => {
+      await store.insertRecipe({ status: "published", authorId: null, recipe: EXEMPLE_RECETTE });
+      // Un administrateur de démonstration : en développement, le cookie `nc_device=dev-admin` le donne.
+      const admin = await store.createProfile("Démo", "admin");
+      const demain = new Date(Date.now() + 86_400_000).toISOString();
+      await store.createInvite(admin.id, "Navigateur de démo", hashToken("dev-invite"), demain);
+      await store.claimInvite(hashToken("dev-invite"), hashToken("dev-admin"), new Date().toISOString());
+    })();
     globale.__ncDevStore = store;
     console.warn("Supabase n'est pas configuré : base en mémoire (les données disparaissent à l'arrêt).");
   }

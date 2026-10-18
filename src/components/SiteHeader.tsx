@@ -11,7 +11,11 @@ export async function SiteHeader() {
           🍳 Notre cuisine
         </Link>
         <div className="flex items-center gap-1 text-sm">
-          {viewer.name && <span className="hidden text-neutral-500 sm:inline">{viewer.name}</span>}
+          {viewer.name && (
+            <Link href="/compte" className={lien}>
+              {viewer.name}
+            </Link>
+          )}
           <Link href="/ajouter" className={lien}>
             Ajouter
           </Link>

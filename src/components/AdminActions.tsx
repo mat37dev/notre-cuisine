@@ -70,9 +70,21 @@ export function ActionButton({
 }
 
 /** Crée un lien d'invitation : pour une nouvelle personne, ou pour un autre appareil d'une personne existante. */
-export function InviteForm({ profilId, profilNom }: { profilId?: string; profilNom?: string }) {
+export function InviteForm({
+  profilId,
+  profilNom,
+  endpoint = "/api/admin/inviter",
+  avecNomAppareil = false,
+}: {
+  profilId?: string;
+  profilNom?: string;
+  /** Adresse appelée ; `/api/compte/inviter` pour un appareil de plus sur son propre compte. */
+  endpoint?: string;
+  avecNomAppareil?: boolean;
+}) {
   const router = useRouter();
   const [nom, setNom] = useState("");
+  const [nomAppareil, setNomAppareil] = useState("");
   const [occupe, setOccupe] = useState(false);
   const [lien, setLien] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
@@ -97,15 +109,16 @@ export function InviteForm({ profilId, profilNom }: { profilId?: string; profilN
     setErreur(null);
     setQr(null);
     try {
-      const res = await fetch("/api/admin/inviter", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(profilId ? { profilId } : { nom }),
+        body: JSON.stringify(avecNomAppareil ? { label: nomAppareil.trim() } : profilId ? { profilId } : { nom }),
       });
       const data = (await res.json().catch(() => ({}))) as { lien?: string; erreur?: string };
       if (res.ok && data.lien) {
         setLien(data.lien);
         setNom("");
+        setNomAppareil("");
         router.refresh();
       } else {
         setErreur(data.erreur ?? "Une erreur est survenue.");
@@ -120,7 +133,18 @@ export function InviteForm({ profilId, profilNom }: { profilId?: string; profilN
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-end gap-2">
-        {!profilId && (
+        {avecNomAppareil && (
+          <label className="flex flex-col text-sm">
+            Nom de l'appareil
+            <input
+              value={nomAppareil}
+              onChange={(e) => setNomAppareil(e.target.value)}
+              placeholder="Mon PC, ma tablette…"
+              className="min-h-11 rounded-lg border border-neutral-300 bg-transparent px-3 dark:border-neutral-700"
+            />
+          </label>
+        )}
+        {!profilId && !avecNomAppareil && (
           <label className="flex flex-col text-sm">
             Prénom
             <input
@@ -133,10 +157,10 @@ export function InviteForm({ profilId, profilNom }: { profilId?: string; profilN
         <button
           type="button"
           onClick={creer}
-          disabled={occupe || (!profilId && !nom.trim())}
+          disabled={occupe || (!profilId && !avecNomAppareil && !nom.trim())}
           className="min-h-11 rounded-lg border border-neutral-400 px-4 py-2 font-medium disabled:opacity-40"
         >
-          {profilId ? `Inviter un autre appareil pour ${profilNom}` : "Créer le lien d'invitation"}
+          {avecNomAppareil ? "Ajouter un appareil" : profilId ? `Inviter un autre appareil pour ${profilNom}` : "Créer le lien d'invitation"}
         </button>
       </div>
       {erreur && (

@@ -29,3 +29,17 @@ describe("getStore", () => {
     expect(getStore()).toBe(faux);
   });
 });
+
+describe("base de développement : un administrateur de démonstration", () => {
+  test("le cookie nc_device=dev-admin donne un administrateur, pour voir les écrans réservés", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("SUPABASE_URL", "");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+    (globalThis as { __ncDevStore?: unknown }).__ncDevStore = undefined;
+    const store = getStore();
+    await new Promise((r) => setTimeout(r, 20)); // la préparation de la base est asynchrone
+    const { getViewer } = await import("../auth");
+    expect(await getViewer(store, "dev-admin")).toMatchObject({ role: "admin", name: "Démo" });
+    expect((await getViewer(store, "inconnu")).role).toBe("visitor");
+  });
+});
