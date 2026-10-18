@@ -33,7 +33,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ token: str
     );
     return new Response(html, { status: 410, headers: ENTETES });
   }
-  const res = NextResponse.redirect(new URL("/", request.url), 303);
+  const res = NextResponse.redirect(new URL("/?bienvenue=1", request.url), 303);
   res.cookies.set(DEVICE_COOKIE, r.deviceToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

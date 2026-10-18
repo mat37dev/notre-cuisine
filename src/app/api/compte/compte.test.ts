@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { claimInvite, createInviteLink, DEVICE_COOKIE, getTokenViewer, getViewer } from "@/lib/auth";
 import { setStoreForTests } from "@/lib/store";
 import { MemoryStore } from "@/lib/store/memory";
@@ -53,6 +53,22 @@ describe("POST /api/compte/inviter : un appareil de plus pour son propre compte"
     expect((await store.listProfiles()).filter((p) => p.name === "Camille")).toHaveLength(1);
     const appareils = (await store.listDevices()).filter((d) => d.profileId === camille.profil.id);
     expect(appareils.map((d) => d.label).sort()).toEqual(["Mon PC", "Téléphone"]);
+  });
+
+  test("le lien suit l'adresse où la personne est connectée, même si SITE_URL en indique une autre", async () => {
+    vi.stubEnv("SITE_URL", "https://ancienne-adresse.vercel.app");
+    try {
+      const camille = await personne("Camille", "member");
+      const req = new Request("https://cuisine.exemple.fr/api/compte/inviter", {
+        method: "POST",
+        headers: { cookie: camille.cookie, "content-type": "application/json" },
+        body: "{}",
+      });
+      const { lien } = await (await inviter(req)).json();
+      expect(lien).toMatch(/^https:\/\/cuisine\.exemple\.fr\/invite\//);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   test("sans nom d'appareil : « Nouvel appareil » ; nom trop long : coupé à 60 caractères", async () => {

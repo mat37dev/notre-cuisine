@@ -51,7 +51,7 @@ describe("POST /invite/[token] : reconnaît l'appareil", () => {
     const token = await nouveauLien();
     const res = await confirmer(token);
     expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toBe("https://x.test/");
+    expect(res.headers.get("location")).toBe("https://x.test/?bienvenue=1");
     const cookie = res.headers.get("set-cookie") ?? "";
     expect(cookie).toContain(`${DEVICE_COOKIE}=`);
     expect(cookie.toLowerCase()).toContain("httponly");

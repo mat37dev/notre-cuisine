@@ -27,7 +27,7 @@ Relève ensuite, dans **Project Settings → API** (ou **Data API**) :
 | `SUPABASE_SERVICE_ROLE_KEY` | la clé secrète |
 | `CRON_SECRET` | un long texte au hasard (au moins 32 caractères) |
 | `IP_HASH_SALT` | un autre texte au hasard |
-| `SITE_URL` | l'adresse du site, par exemple `https://notre-cuisine.vercel.app` (sans `/` à la fin) |
+| `SITE_URL` | l'adresse du site, par exemple `https://cuisine.mathieucrosnier.fr` (sans `/` à la fin) |
 
 Si tu as ajouté Supabase depuis la boutique d'intégrations de Vercel, `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont peut-être déjà là : vérifie qu'ils existent avec ces noms exacts.
 
@@ -42,7 +42,7 @@ Sur ton ordinateur, dans le dossier du projet, crée un fichier **`.env.producti
 ```
 SUPABASE_URL=https://jjmrpmqdomvmqulgywfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=ta-clé-secrète
-SITE_URL=https://notre-cuisine.vercel.app
+SITE_URL=https://cuisine.mathieucrosnier.fr
 ```
 
 Puis (la commande fonctionne avec Node 20 comme avec Node 22) :
