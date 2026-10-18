@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   if (!acces.ok) return acces.res;
   const corps = (await request.json().catch(() => ({}))) as { label?: unknown };
   const label = typeof corps.label === "string" && corps.label.trim() ? corps.label.trim().slice(0, 60) : "Nouvel appareil";
-  const origine = process.env.SITE_URL?.replace(/\/+$/, "") || originOf(request);
+  // L'adresse où la personne est connectée : le cookie du nouvel appareil doit se poser sur le même site.
+  const origine = originOf(request);
   return json({ lien: await createInviteLink(acces.store, acces.viewer.profileId, label, origine) });
 }

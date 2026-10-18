@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { claimInvite, createAccessToken, createInviteLink, DEVICE_COOKIE, getViewer } from "@/lib/auth";
 import { uneRecette } from "@/lib/recipe/fixtures";
 import { setStoreForTests } from "@/lib/store";
@@ -137,5 +137,22 @@ describe("un jeton d'accès, même celui de l'admin, n'ouvre pas l'administratio
     expect((await inviter(avec("https://x.test/api/admin/inviter", { body: JSON.stringify({ nom: "Léa" }) }))).status).toBe(403);
     expect((await exporter(avec("https://x.test/api/admin/export", { method: "GET" }))).status).toBe(403);
     expect((await store.getRecipe(row.id))?.status).toBe("pending");
+  });
+});
+
+describe("POST /api/admin/inviter : le lien suit l'adresse où l'admin est connecté", () => {
+  test("même si SITE_URL en indique une autre", async () => {
+    vi.stubEnv("SITE_URL", "https://ancienne-adresse.vercel.app");
+    try {
+      const req = new Request("https://cuisine.exemple.fr/api/admin/inviter", {
+        method: "POST",
+        headers: { cookie: admin.cookie, "content-type": "application/json" },
+        body: JSON.stringify({ nom: "Léa" }),
+      });
+      const { lien } = await (await inviter(req)).json();
+      expect(lien).toMatch(/^https:\/\/cuisine\.exemple\.fr\/invite\//);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

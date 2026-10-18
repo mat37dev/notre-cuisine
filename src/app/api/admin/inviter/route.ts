@@ -24,7 +24,8 @@ export async function POST(request: Request) {
     profilId = (await admin.store.createProfile(nom, "member")).id;
   }
 
-  const origine = process.env.SITE_URL?.replace(/\/+$/, "") || originOf(request);
+  // L'adresse où la personne est connectée : le cookie du nouvel appareil doit se poser sur le même site.
+  const origine = originOf(request);
   const lien = await createInviteLink(
     admin.store,
     profilId,
