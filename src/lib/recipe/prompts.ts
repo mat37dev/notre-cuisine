@@ -122,6 +122,18 @@ ${EXEMPLE_JSON}
 
 Le site est tolérant : il comprend les virgules françaises (1,5), les accents dans les noms de champs et les unités écrites en toutes lettres. Si le bloc est refusé, la personne te colle le message d'erreur : renvoie le bloc complet corrigé.
 
+## Envoyer directement, avec un jeton
+
+Seulement si tu peux faire des requêtes web (Claude Code, un script, un outil connecté) ET que la personne t'a donné un jeton (une clé qui commence par nc_, créée dans « Mon compte » sur le site) :
+
+- POST ${o}/api/recettes
+- En-têtes : Authorization: Bearer LE_JETON et Content-Type: application/json
+- Corps : {"texte": "<le bloc JSON de la recette, sous forme de texte>"}
+- Réponses : 201 (recette publiée tout de suite, avec son id, son slug et son lien), 200 (recette existante mise à jour, si le champ "id" est présent), 422 (le bloc est refusé : la liste "errors" dit pourquoi, corrige et renvoie), 401 (jeton inconnu ou retiré : demande-en un nouveau à la personne), 429 (trop d'envois, réessaie plus tard).
+- Une recette par requête : pour plusieurs recettes, fais une requête par recette.
+- Le jeton est secret : ne l'affiche pas, ne l'écris jamais dans une recette ni dans une réponse, et ne l'envoie à aucune autre adresse que ${o}.
+- Sans jeton, ne tente pas d'envoyer toi-même : donne le bloc à la personne (voir « Ajouter une recette »).
+
 ## Modifier une recette
 
 1. Lis la recette (adresse ci-dessus), ou demande à la personne de te coller son bloc depuis le bouton « Modifier avec Claude » de la page de la recette.
