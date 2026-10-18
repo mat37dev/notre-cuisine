@@ -64,6 +64,17 @@ describe("documentationClaude", () => {
     expect(doc).toContain("{{id}}");
   });
 
+  test("explique l'envoi direct avec un jeton : requête, en-tête Authorization, réponses, et la discrétion du jeton", () => {
+    expect(doc).toMatch(/## Envoyer directement/);
+    expect(doc).toContain("POST https://x.test/api/recettes");
+    expect(doc).toContain('{"texte"');
+    expect(doc).toContain("Authorization: Bearer");
+    expect(doc).toContain("« Mon compte »");
+    expect(doc).toMatch(/401/);
+    expect(doc).toMatch(/201/);
+    expect(doc).toMatch(/ne l'écris jamais dans une recette/);
+  });
+
   test("explique comment ajouter et modifier une recette, et ce qu'il ne peut pas faire seul", () => {
     expect(doc).toMatch(/Ajouter une recette/);
     expect(doc).toMatch(/Modifier une recette/);

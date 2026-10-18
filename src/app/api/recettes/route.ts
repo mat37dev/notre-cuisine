@@ -1,4 +1,4 @@
-import { clientIpHash, json, viewerFromRequest } from "@/lib/http";
+import { clientIpHash, json, refusJeton, viewerFromRequest } from "@/lib/http";
 import { parseRecipeBlock } from "@/lib/recipe/parse";
 import { MAX_PAYLOAD_BYTES } from "@/lib/recipe/types";
 import { listPublished, submitRecipe } from "@/lib/service";
@@ -26,6 +26,10 @@ const ERREURS = {
 } as const;
 
 export async function POST(request: Request) {
+  const store = getStore();
+  const viewer = await viewerFromRequest(request, store);
+  const refus = refusJeton(viewer); // un jeton faux est dit tout de suite, avant de lire le reste
+  if (refus) return refus;
   if (Number(request.headers.get("content-length") ?? 0) > 2 * MAX_PAYLOAD_BYTES) {
     return json({ errors: [ERREURS.too_large[1]] }, 413);
   }
@@ -44,8 +48,6 @@ export async function POST(request: Request) {
   const lu = parseRecipeBlock(texte);
   if (!lu.ok) return json({ errors: lu.errors }, 422);
 
-  const store = getStore();
-  const viewer = await viewerFromRequest(request, store);
   const res = await submitRecipe(store, viewer, lu.recipe, { ipHash: clientIpHash(request) });
   if (!res.ok) {
     const [status, message] = ERREURS[res.code];

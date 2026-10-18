@@ -93,6 +93,8 @@ Résultat attendu : tous les tests « Store (mémoire) » **et** « Store (Supab
 - [ ] **Sauvegarde** : Admin → Exporter les recettes télécharge un fichier JSON.
 - [ ] **Photo** : sur une recette, « Modifier ici » → « Choisir une photo » : la photo s'affiche sur la recette et sur la liste. Si le site répond que le stockage n'est pas prêt, la migration `…_images.sql` n'a pas été appliquée (point 1).
 - [ ] **Mon compte** : ton prénom en haut → « Ajouter un appareil » crée un lien pour ton ordinateur ou ta tablette ; ouvre-le sur l'autre appareil. Chaque personne peut aussi retirer ses propres appareils.
+- [ ] **Jeton pour Claude** : dans Mon compte, « Créer un jeton pour Claude », copie les consignes dans une discussion Claude qui peut faire des requêtes (Claude Code par exemple) et demande-lui d'envoyer une recette : elle doit être publiée tout de suite. Retire ensuite le jeton : un nouvel envoi doit répondre 401. Résultat : …
+- [ ] **robots.txt** : `/robots.txt` autorise le site (sauf `/admin` et `/invite/`) ; Claude peut ouvrir `/docs`. Résultat : …
 - [ ] **Documentation pour Claude** : donne l'adresse `…/docs` à un Claude sans rien d'autre : peut-il chercher et lire une recette, et te rendre un bloc au bon format ?
 
 ## En cas de problème

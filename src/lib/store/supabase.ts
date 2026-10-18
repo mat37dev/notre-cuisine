@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { makeSlug } from "../recipe/slug";
 import type { Recipe } from "../recipe/types";
-import type { ClaimResult, Device, Profile, RecipeRow, Role, Status, Store } from "./types";
+import type { ClaimResult, Device, DeviceKind, Profile, RecipeRow, Role, Status, Store } from "./types";
 
 type DbRecipe = {
   id: string;
@@ -16,6 +16,7 @@ type DbDevice = {
   id: string;
   profile_id: string;
   label: string;
+  kind: DeviceKind;
   created_at: string;
   last_seen_at: string;
   revoked_at: string | null;
@@ -45,6 +46,7 @@ const toDevice = (d: DbDevice): Device => ({
   id: d.id,
   profileId: d.profile_id,
   label: d.label,
+  kind: d.kind ?? "appareil",
   createdAt: d.created_at,
   lastSeenAt: d.last_seen_at,
   revokedAt: d.revoked_at,
@@ -208,6 +210,24 @@ export class SupabaseStore implements Store {
       .maybeSingle();
     const row = ok(res) as (DbDevice & { profiles: Profile | null }) | null;
     return row?.profiles ? { device: toDevice(row), profile: row.profiles } : null;
+  }
+
+  async createToken(profileId: string, label: string, tokenHash: string, nowIso: string): Promise<Device> {
+    const device = ok(
+      await this.db
+        .from("devices")
+        .insert({
+          profile_id: profileId,
+          label,
+          kind: "jeton",
+          token_hash: tokenHash,
+          created_at: nowIso,
+          last_seen_at: nowIso,
+        })
+        .select()
+        .single(),
+    ) as DbDevice;
+    return toDevice(device);
   }
 
   async touchDevice(id: string, nowIso: string): Promise<void> {
