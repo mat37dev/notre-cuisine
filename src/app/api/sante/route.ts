@@ -1,6 +1,10 @@
 import { json } from "@/lib/http";
 import { getStore } from "@/lib/store";
 
+// Sans cela, Next calcule cette route une seule fois à la construction du site (elle ne lit pas la requête)
+// et afficherait pour toujours l'état de ce moment-là.
+export const dynamic = "force-dynamic";
+
 const VARIABLES = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "CRON_SECRET", "IP_HASH_SALT", "SITE_URL"] as const;
 
 /** Raison de la panne, en français, sans jamais recopier le message interne (il pourrait contenir des secrets). */

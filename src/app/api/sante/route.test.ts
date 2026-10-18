@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { setStoreForTests } from "@/lib/store";
 import { MemoryStore } from "@/lib/store/memory";
-import { GET } from "./route";
+import { dynamic, GET } from "./route";
 
 beforeEach(() => {
   vi.stubEnv("SUPABASE_URL", "https://exemple.supabase.co");
@@ -88,5 +88,11 @@ describe("GET /api/sante", () => {
     const { texte } = await appeler();
     expect(texte).not.toContain("cle-ultra-secrete-123");
     expect(texte).not.toContain("exemple.supabase.co");
+  });
+});
+
+describe("calcul à chaque appel", () => {
+  test("la route est dynamique : sans cela Next la calcule une fois à la construction et affiche un état périmé", () => {
+    expect(dynamic).toBe("force-dynamic");
   });
 });
