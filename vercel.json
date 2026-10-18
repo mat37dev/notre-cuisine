@@ -1,4 +1,12 @@
 {
   "framework": "nextjs",
-  "crons": [{ "path": "/api/cron/keepalive", "schedule": "0 6 * * 1" }]
+  "crons": [{ "path": "/api/cron/keepalive", "schedule": "0 6 * * 1" }],
+  "redirects": [
+    {
+      "source": "/((?!api/cron).*)",
+      "has": [{ "type": "host", "value": "notre-cuisine.*\\.vercel\\.app" }],
+      "destination": "https://cuisine.mathieucrosnier.fr/$1",
+      "permanent": false
+    }
+  ]
 }

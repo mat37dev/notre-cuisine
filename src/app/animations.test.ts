@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 
-const css = readFileSync(join(process.cwd(), "src", "app", "globals.css"), "utf8");
+// Sous Windows, git peut convertir les fins de ligne en CRLF : on les normalise pour que les motifs ci-dessous restent valables
+const css = readFileSync(join(process.cwd(), "src", "app", "globals.css"), "utf8").replaceAll("\r\n", "\n");
 
 describe("animations : garde-fous dans la feuille de style", () => {
   test("transition douce entre deux pages (navigation entre documents)", () => {
