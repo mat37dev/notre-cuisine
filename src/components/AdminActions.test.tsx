@@ -67,3 +67,25 @@ describe("InviteForm", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ profilId: "p1" });
   });
 });
+
+describe("InviteForm : pour son propre compte", () => {
+  test("envoie le nom de l'appareil à /api/compte/inviter et affiche le lien", async () => {
+    fetchMock.mockReturnValue(reponse(200, { lien: "https://x.test/invite/ghi" }));
+    const user = userEvent.setup();
+    render(<InviteForm endpoint="/api/compte/inviter" avecNomAppareil />);
+    await user.type(screen.getByLabelText("Nom de l'appareil"), "Mon PC");
+    await user.click(screen.getByRole("button", { name: "Ajouter un appareil" }));
+    expect(await screen.findByText("https://x.test/invite/ghi")).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/compte/inviter");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ label: "Mon PC" });
+  });
+
+  test("le nom de l'appareil est facultatif", async () => {
+    fetchMock.mockReturnValue(reponse(200, { lien: "https://x.test/invite/jkl" }));
+    const user = userEvent.setup();
+    render(<InviteForm endpoint="/api/compte/inviter" avecNomAppareil />);
+    await user.click(screen.getByRole("button", { name: "Ajouter un appareil" }));
+    await screen.findByText("https://x.test/invite/jkl");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ label: "" });
+  });
+});

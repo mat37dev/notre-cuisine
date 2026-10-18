@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton } from "@/components/AdminActions";
+import { BackLink } from "@/components/BackLink";
 import { CopyButton } from "@/components/CopyButton";
 import { RecipeView } from "@/components/RecipeView";
 import { buildEditPrompt } from "@/lib/recipe/prompts";
@@ -27,21 +28,22 @@ export default async function PageRecette({ params }: Props) {
   const modifiable = canEdit(viewer, row);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
+    <main className="mx-auto max-w-5xl space-y-5 px-4 py-6">
+      <BackLink />
       {row.status === "pending" && (
-        <p className="rounded-lg bg-amber-100 p-3 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+        <p className="info">
           Cette recette est en attente de validation : elle n’apparaît pas encore sur la liste.
         </p>
       )}
       <RecipeView recipe={row.recipe} />
-      <footer className="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-        {auteur && <p className="text-sm text-neutral-500">Ajoutée par {auteur}</p>}
+      <footer className="space-y-3 border-t border-ligne pt-5">
+        {auteur && <p className="text-sm text-muted">Ajoutée par {auteur}</p>}
         {modifiable && (
           <div className="flex flex-wrap gap-2">
             <CopyButton text={buildEditPrompt(row)} label="Modifier avec Claude" />
             <Link
               href={`/recettes/${row.slug}/modifier`}
-              className="rounded-lg border border-neutral-400 px-4 py-2 font-medium"
+              className="btn btn-secondary"
             >
               Modifier ici
             </Link>

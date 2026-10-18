@@ -78,13 +78,12 @@ export function TimerChip({ secondes }: { secondes: number }) {
     }
   }
 
-  const style =
-    "inline-flex min-h-11 items-center gap-1 rounded-full border border-orange-600 px-4 py-1 font-mono text-orange-700 dark:text-orange-300";
+  const style = "btn btn-secondary !rounded-full font-mono !text-brand";
 
   if (etat.type === "fini") {
     return (
       <span className="inline-flex items-center gap-2">
-        <span role="status" className="rounded-full bg-green-600 px-4 py-2 font-semibold text-white">
+        <span role="status" className="succes !rounded-full !px-4 !py-2">
           Terminé !
         </span>
         <button type="button" className={style} onClick={() => setEtat({ type: "repos" })}>
@@ -99,11 +98,11 @@ export function TimerChip({ secondes }: { secondes: number }) {
   const icone = etat.type === "marche" ? "⏸" : "▶";
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <button type="button" className={style} onClick={clic}>
+      <button type="button" className={`${style} ${etat.type === "marche" ? "chrono-en-marche" : ""}`} onClick={clic}>
         <span aria-hidden>{icone}</span> {formatClock(ms)}
       </button>
       {android && etat.type === "repos" && (
-        <a className="text-sm underline" href={clockIntentUrl(secondes)}>
+        <a className="text-sm font-semibold text-brand underline" href={clockIntentUrl(secondes)}>
           Horloge du téléphone
         </a>
       )}

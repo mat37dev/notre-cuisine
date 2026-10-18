@@ -9,9 +9,9 @@ export default async function PageAjouter({ searchParams }: { searchParams: Prom
   const { text } = await searchParams;
   const viewer = await getCurrentViewer();
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
-      <h1 className="text-2xl font-bold">Ajouter une recette</h1>
-      <p className="text-neutral-600 dark:text-neutral-300">
+    <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+      <h1 className="titre text-3xl">Ajouter une recette</h1>
+      <p className="text-muted">
         Demande ta recette à Claude, copie sa réponse (ou partage-la vers cette appli) et colle-la ici.{" "}
         {viewer.role === "visitor"
           ? "Cet appareil n’est pas encore reconnu : ta recette attendra d’être validée avant d’apparaître."
@@ -19,7 +19,7 @@ export default async function PageAjouter({ searchParams }: { searchParams: Prom
       </p>
       <p className="text-sm">
         Pas encore configuré ? Les{" "}
-        <Link href="/claude" className="underline">
+        <Link href="/claude" className="font-semibold text-brand underline">
           instructions pour Claude
         </Link>{" "}
         sont à coller une fois dans ta conversation.

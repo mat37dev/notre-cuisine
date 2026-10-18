@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
+import { ImageField } from "./ImageField";
 import { CATEGORIES, type Categorie, type Recipe, type Unite } from "@/lib/recipe/types";
 
 const LIBELLES_UNITES: Array<[Unite, string]> = [
@@ -20,8 +21,7 @@ const LIBELLES_UNITES: Array<[Unite, string]> = [
 type LigneIngredient = { cle: number; id: string; nom: string; quantite: string; unite: Unite };
 type LigneEtape = { cle: number; titre: string; texte: string; chrono: string };
 
-const champ =
-  "min-h-11 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 dark:border-neutral-700";
+const champ = "champ";
 
 export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string }) {
   const router = useRouter();
@@ -103,6 +103,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
 
   return (
     <form onSubmit={enregistrer} className="space-y-6">
+      {recipe.id && <ImageField recipeId={recipe.id} titre={recipe.titre} image={recipe.image} />}
       <div className="space-y-3">
         <label className="block">
           Titre
@@ -141,7 +142,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
       </div>
 
       <fieldset className="space-y-3">
-        <legend className="text-xl font-semibold">Ingrédients</legend>
+        <legend className="titre text-2xl">Ingrédients</legend>
         {ingredients.map((ing) => (
           <div key={ing.cle} className="grid grid-cols-[1fr_5rem_6.5rem_auto] items-end gap-2">
             <input
@@ -174,7 +175,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
             <button
               type="button"
               aria-label="Supprimer l'ingrédient"
-              className="size-11 rounded-lg border border-neutral-400"
+              className="btn btn-secondary !px-0 size-11"
               onClick={() => setIngredients((l) => l.filter((x) => x.cle !== ing.cle))}
             >
               ✕
@@ -183,7 +184,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
         ))}
         <button
           type="button"
-          className="min-h-11 rounded-lg border border-neutral-400 px-4"
+          className="btn btn-secondary"
           onClick={() => {
             setIngredients((l) => [...l, { cle: prochaineCle, id: "", nom: "", quantite: "", unite: "" }]);
             setProchaineCle((n) => n + 1);
@@ -194,13 +195,13 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-xl font-semibold">Étapes</legend>
-        <p className="text-sm text-neutral-500">
+        <legend className="titre text-2xl">Étapes</legend>
+        <p className="text-sm text-muted">
           Écris {"{{id}}"} dans une étape pour y afficher la quantité d’un ingrédient (par exemple {"{{pignons}}"}).
         </p>
         {etapes.map((etape, n) => (
-          <div key={etape.cle} className="space-y-2 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
-            <p className="font-semibold">Étape {n + 1}</p>
+          <div key={etape.cle} className="carte space-y-2 p-3">
+            <p className="font-bold">Étape {n + 1}</p>
             <input
               aria-label="Titre de l'étape"
               placeholder="Titre (facultatif)"
@@ -227,7 +228,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
               <button
                 type="button"
                 aria-label="Supprimer l'étape"
-                className="min-h-11 shrink-0 rounded-lg border border-neutral-400 px-3"
+                className="btn btn-secondary shrink-0 !px-3"
                 onClick={() => setEtapes((l) => l.filter((x) => x.cle !== etape.cle))}
               >
                 Supprimer l’étape
@@ -237,7 +238,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
         ))}
         <button
           type="button"
-          className="min-h-11 rounded-lg border border-neutral-400 px-4"
+          className="btn btn-secondary"
           onClick={() => {
             setEtapes((l) => [...l, { cle: prochaineCle, titre: "", texte: "", chrono: "" }]);
             setProchaineCle((n) => n + 1);
@@ -253,7 +254,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
       </label>
 
       {erreurs.length > 0 && (
-        <div role="alert" className="rounded-lg bg-red-100 p-3 text-red-950 dark:bg-red-950 dark:text-red-100">
+        <div role="alert" className="alerte">
           <ul className="list-disc pl-5">
             {erreurs.map((e) => (
               <li key={e}>{e}</li>
@@ -265,7 +266,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
       <button
         type="submit"
         disabled={envoi}
-        className="min-h-11 rounded-lg bg-orange-600 px-6 py-2 font-medium text-white disabled:opacity-40"
+        className="btn btn-primary !px-6"
       >
         Enregistrer
       </button>

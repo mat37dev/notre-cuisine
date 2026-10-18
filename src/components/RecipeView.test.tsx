@@ -55,3 +55,16 @@ describe("RecipeView", () => {
     expect(screen.getByText(/Sortir la burrata au dernier moment/)).toBeInTheDocument();
   });
 });
+
+describe("RecipeView : image de présentation", () => {
+  test("affiche l'image avec le titre comme texte alternatif", () => {
+    render(<RecipeView recipe={uneRecette({ image: "https://exemple.test/a.jpg" })} />);
+    const img = screen.getByRole("img", { name: "Salade burrata" });
+    expect(img).toHaveAttribute("src", "https://exemple.test/a.jpg");
+  });
+
+  test("sans image : aucune image", () => {
+    render(<RecipeView recipe={uneRecette()} />);
+    expect(screen.queryByRole("img", { name: "Salade burrata" })).not.toBeInTheDocument();
+  });
+});

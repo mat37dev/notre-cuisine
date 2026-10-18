@@ -249,3 +249,29 @@ describe("textes hostiles (un visiteur peut envoyer n'importe quoi)", () => {
     expect(parseRecipeBlock(texte).ok).toBe(false);
   });
 });
+
+describe("image de présentation", () => {
+  const adresse = "https://exemple.test/photos/salade.jpg";
+
+  test("une adresse https est gardée, aussi sous les noms photo ou image_url", () => {
+    expect(ok(fence({ ...base, image: adresse })).recipe.image).toBe(adresse);
+    expect(ok(fence({ ...base, photo: adresse })).recipe.image).toBe(adresse);
+    expect(ok(fence({ ...base, image_url: adresse })).recipe.image).toBe(adresse);
+  });
+
+  test("sans image : le champ n'existe pas", () => {
+    expect("image" in ok(fence(base)).recipe).toBe(false);
+  });
+
+  test.each([
+    ["http non sécurisé", "http://exemple.test/a.jpg"],
+    ["javascript:", "javascript:alert(1)"],
+    ["data:", "data:image/png;base64,AAAA"],
+    ["pas une adresse", "une belle photo de salade"],
+    ["trop longue", "https://exemple.test/" + "a".repeat(600)],
+  ])("%s : ignorée avec un avertissement, la recette reste valide", (_nom, valeur) => {
+    const r = ok(fence({ ...base, image: valeur }));
+    expect("image" in r.recipe).toBe(false);
+    expect(r.warnings.join(" ")).toContain("image");
+  });
+});

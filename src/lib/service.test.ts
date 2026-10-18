@@ -177,3 +177,20 @@ describe("canView et canEdit", () => {
     expect(canEdit(VISITOR, row)).toBe(false);
   });
 });
+
+describe("image conservée à la mise à jour", () => {
+  test("une mise à jour qui ne mentionne pas l'image (Claude l'a oubliée) garde l'image existante", async () => {
+    const row = valeur(await submitRecipe(store, camille, uneRecette({ image: "https://exemple.test/a.jpg" }), ctx()));
+    const maj = valeur(await submitRecipe(store, camille, uneRecette({ id: row.id, titre: "Autre titre" }), ctx()));
+    expect(maj.recipe.titre).toBe("Autre titre");
+    expect(maj.recipe.image).toBe("https://exemple.test/a.jpg");
+  });
+
+  test("une mise à jour qui donne une nouvelle image la remplace", async () => {
+    const row = valeur(await submitRecipe(store, camille, uneRecette({ image: "https://exemple.test/a.jpg" }), ctx()));
+    const maj = valeur(
+      await submitRecipe(store, camille, uneRecette({ id: row.id, image: "https://exemple.test/b.jpg" }), ctx()),
+    );
+    expect(maj.recipe.image).toBe("https://exemple.test/b.jpg");
+  });
+});

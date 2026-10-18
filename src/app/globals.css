@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
+/* Thème « cuisine » : un seul thème clair, chaud et marron (pas de mode sombre automatique). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --fond: #ecdcc0;
+  --papier: #f8eddb;
+  --encre: #3a2312;
+  --muted: #6b5238;
+  --ligne: #d4b98f;
+  --brand: #a3400e;
+  --brand-fort: #7f330b;
+  --brand-doux: #f5d9b4;
+  --sur-brand: #ffffff;
+  --herbe: #4f6f35;
+  --beurre: #f6e2a4;
+  --danger: #a3281c;
+  --danger-doux: #f7d9d3;
+  --ombre: 0 1px 2px rgb(70 38 10 / 0.08), 0 6px 18px rgb(70 38 10 / 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-fond: var(--fond);
+  --color-papier: var(--papier);
+  --color-encre: var(--encre);
+  --color-muted: var(--muted);
+  --color-ligne: var(--ligne);
+  --color-brand: var(--brand);
+  --color-brand-fort: var(--brand-fort);
+  --color-brand-doux: var(--brand-doux);
+  --color-sur-brand: var(--sur-brand);
+  --color-herbe: var(--herbe);
+  --color-beurre: var(--beurre);
+  --color-danger: var(--danger);
+  --color-danger-doux: var(--danger-doux);
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--fond);
+  /* petits points discrets, comme un papier de carnet */
+  background-image: radial-gradient(color-mix(in srgb, var(--ligne) 65%, transparent) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  color: var(--encre);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+::selection {
+  background: var(--brand-doux);
+}
+
+@layer components {
+  .titre {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+  }
+
+  .carte {
+    @apply rounded-2xl border border-ligne bg-papier;
+    box-shadow: var(--ombre);
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full bg-brand-doux px-2.5 py-0.5 text-xs font-bold text-brand-fort;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-bold transition;
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-40;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-primary {
+    @apply bg-brand text-sur-brand hover:bg-brand-fort;
+  }
+  .btn-secondary {
+    @apply border border-ligne bg-papier text-encre hover:border-brand;
+  }
+  .btn-danger {
+    @apply border border-danger text-danger hover:bg-danger-doux;
+  }
+
+  .champ {
+    @apply min-h-11 w-full rounded-xl border border-ligne bg-papier px-3 py-2 text-encre placeholder:text-muted;
+    @apply focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none;
+  }
+
+  .puce {
+    @apply inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-ligne bg-papier px-4 text-sm font-semibold;
+    @apply hover:border-brand;
+  }
+  .puce[aria-current="true"],
+  .puce[aria-pressed="true"] {
+    @apply border-brand bg-brand text-sur-brand;
+  }
+
+  .alerte {
+    @apply rounded-xl bg-danger-doux p-3 text-danger;
+  }
+  .info {
+    @apply rounded-xl bg-beurre p-3;
+  }
+  .succes {
+    @apply rounded-xl bg-brand-doux p-3 font-semibold text-brand-fort;
+  }
+}
+
+/* ---------- Animations ---------- */
+
+/* Passage doux d'une page à l'autre (Chrome, Edge, Safari récents) ; l'en-tête reste en place. */
+@view-transition {
+  navigation: auto;
+}
+.entete-site {
+  view-transition-name: entete;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+}
+/* Les cartes qui changent de place (tri, filtre) glissent au lieu de sauter. */
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Les cartes apparaissent en fondu, l'une après l'autre (--i = leur rang, plafonné à 12). */
+.carte-liste {
+  animation: apparition 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.pop {
+  animation: pop 0.3s ease-out;
+}
+
+@keyframes surbrillance {
+  from {
+    background-color: var(--beurre);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.maj {
+  border-radius: 0.375rem;
+  animation: surbrillance 0.9s ease-out;
+}
+
+@keyframes pulsation {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+.chrono-en-marche {
+  animation: pulsation 1.6s ease-in-out infinite;
+}
+
+/* Pour qui a demandé « réduire les animations » dans son appareil : plus aucun mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

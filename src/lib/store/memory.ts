@@ -71,6 +71,12 @@ export class MemoryStore implements Store {
     return this.recipes.length < avant;
   }
 
+  async putImage(_recipeId: string, octets: Uint8Array, contentType: string): Promise<string> {
+    return `data:${contentType};base64,${Buffer.from(octets).toString("base64")}`;
+  }
+
+  async deleteImage(): Promise<void> {}
+
   async createProfile(name: string, role: Role): Promise<Profile> {
     const profil = { id: crypto.randomUUID(), name, role };
     this.profiles.push(profil);

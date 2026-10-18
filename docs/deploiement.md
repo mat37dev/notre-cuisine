@@ -6,14 +6,14 @@ Tout ce qui suit est gratuit et sans carte bancaire. Compte une demi-heure la pr
 
 Le projet Supabase existe déjà (identifiant `jjmrpmqdomvmqulgywfn`). Il faut y créer les tables, **une seule fois**, de l'une de ces deux façons :
 
-- **Automatique** : si l'intégration GitHub de Supabase est active sur ce dépôt avec le dossier `supabase`, le fichier `supabase/migrations/20261018000000_init.sql` s'applique quand la branche principale (`main`) est mise à jour, donc après la fusion de la demande de fusion (PR).
-- **À la main** : dans Supabase, ouvre **SQL Editor**, colle tout le contenu de `supabase/migrations/20261018000000_init.sql`, puis **Run**.
+- **Automatique** : si l'intégration GitHub de Supabase est active sur ce dépôt avec le dossier `supabase`, les fichiers de `supabase/migrations/` s'appliquent quand la branche principale (`main`) est mise à jour : `20261018000000_init.sql` (les tables) puis `20261018120000_images.sql` (le dossier de stockage des photos `recipe-images`).
+- **À la main** : dans Supabase, ouvre **SQL Editor**, colle le contenu de chaque fichier de `supabase/migrations/` dans l'ordre de leur nom (`…_init.sql` puis `…_images.sql`), puis **Run**.
 
 Vérifie : dans **Table Editor**, tu dois voir 5 tables (`profiles`, `recipes`, `invites`, `devices`, `submissions`) avec la mention « RLS enabled ». Ne fais pas les deux façons : la seconde afficherait « already exists », sans gravité.
 
 Relève ensuite, dans **Project Settings → API** (ou **Data API**) :
 - l'adresse du projet : `https://jjmrpmqdomvmqulgywfn.supabase.co` ;
-- la clé secrète : **service_role** (ou « Secret key », qui commence par `sb_secret_`). **Garde-la pour toi : elle donne tous les droits.** Elle ne va que dans Vercel et dans ton fichier `.env.local`, jamais dans le dépôt GitHub.
+- la clé secrète : **service_role** (ou « Secret key », qui commence par `sb_secret_`). **Garde-la pour toi : elle donne tous les droits.** Elle ne va que dans Vercel et dans ton fichier `.env.production.local`, jamais dans le dépôt GitHub.
 
 ## 2. Mettre le site en ligne avec Vercel
 
@@ -37,7 +37,7 @@ La tâche planifiée de `vercel.json` appelle `/api/cron/keepalive` chaque lundi
 
 ## 3. Ton premier lien d'administrateur
 
-Sur ton ordinateur, dans le dossier du projet, crée un fichier `.env.local` (jamais commité) :
+Sur ton ordinateur, dans le dossier du projet, crée un fichier **`.env.production.local`** (jamais commité, et jamais lu par `npm run dev` : le site de développement ne touche donc jamais à ta vraie base) :
 
 ```
 SUPABASE_URL=https://jjmrpmqdomvmqulgywfn.supabase.co
@@ -83,7 +83,7 @@ Résultat attendu : tous les tests « Store (mémoire) » **et** « Store (Supab
 
 À cocher une fois en ligne, en notant le résultat. Certaines choses dépendent d'Android et de Claude et n'ont pas pu être testées avant.
 
-- [ ] **Installation** : l'appli s'installe depuis Chrome sur Android. Résultat : …
+- [ ] **Installation** : sur Chrome Android, un bouton « Installer l'appli » apparaît en haut du site (et dans Mon compte, et Admin) ; il ouvre la fenêtre d'installation. Sinon, menu ⋮ → Installer l'application. Résultat : …
 - [ ] **Partage depuis Claude** : dans l'appli Claude Android, appuie longuement sur une réponse contenant une recette → Partager → « Notre cuisine ». Le texte arrive-t-il dans la page Ajouter ? Sinon, seul le bouton « Coller depuis le presse-papiers » fonctionne (et c'est suffisant). Résultat : …
 - [ ] **Chrono du téléphone** : sur une recette avec un chrono, le lien « Horloge du téléphone » lance-t-il un minuteur dans l'appli Horloge ? Sinon, le chrono de la page reste utilisable ; dis-le-moi et je retire le lien. Résultat : …
 - [ ] **Appareil reconnu** : l'appareil de ta copine est toujours reconnu une semaine plus tard (le menu affiche son prénom dans la barre du haut). Résultat : …
@@ -91,6 +91,9 @@ Résultat attendu : tous les tests « Store (mémoire) » **et** « Store (Supab
 - [ ] **Visiteur** : dans une fenêtre privée, envoyer une recette → « en attente » ; elle n'apparaît pas sur la liste publique, mais dans Admin pour toi.
 - [ ] **Hors ligne** : ouvre une recette, coupe le réseau, rouvre-la : elle s'affiche encore.
 - [ ] **Sauvegarde** : Admin → Exporter les recettes télécharge un fichier JSON.
+- [ ] **Photo** : sur une recette, « Modifier ici » → « Choisir une photo » : la photo s'affiche sur la recette et sur la liste. Si le site répond que le stockage n'est pas prêt, la migration `…_images.sql` n'a pas été appliquée (point 1).
+- [ ] **Mon compte** : ton prénom en haut → « Ajouter un appareil » crée un lien pour ton ordinateur ou ta tablette ; ouvre-le sur l'autre appareil. Chaque personne peut aussi retirer ses propres appareils.
+- [ ] **Documentation pour Claude** : donne l'adresse `…/docs` à un Claude sans rien d'autre : peut-il chercher et lire une recette, et te rendre un bloc au bon format ?
 
 ## En cas de problème
 

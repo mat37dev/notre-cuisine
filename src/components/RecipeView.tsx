@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { EMOJIS_CATEGORIES, LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
 import { formatQuantity, renderStepText } from "@/lib/recipe/scale";
 import type { Recipe } from "@/lib/recipe/types";
+import { RecipeArt } from "./RecipeArt";
 import { TimerChip } from "./TimerChip";
 
 const MIN_PERSONNES = 1;
@@ -11,80 +13,108 @@ const borner = (n: number) => Math.min(MAX_PERSONNES, Math.max(MIN_PERSONNES, Ma
 
 export function RecipeView({ recipe }: { recipe: Recipe }) {
   const [personnes, setPersonnes] = useState(() => borner(recipe.portions));
-  const bouton =
-    "flex size-11 items-center justify-center rounded-full border border-neutral-400 text-2xl disabled:opacity-30";
+  const rond =
+    "flex size-12 items-center justify-center rounded-full border border-ligne bg-papier text-2xl font-bold " +
+    "hover:border-brand disabled:opacity-30";
 
   return (
     <article className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold">{recipe.titre}</h1>
-        {recipe.description && <p className="text-neutral-600 dark:text-neutral-300">{recipe.description}</p>}
-      </header>
-
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className={bouton}
-          aria-label="Moins de personnes"
-          disabled={personnes <= MIN_PERSONNES}
-          onClick={() => setPersonnes((n) => borner(n - 1))}
-        >
-          −
-        </button>
-        <output aria-label="Nombre de personnes" className="min-w-8 text-center text-2xl font-semibold">
-          {personnes}
-        </output>
-        <button
-          type="button"
-          className={bouton}
-          aria-label="Plus de personnes"
-          disabled={personnes >= MAX_PERSONNES}
-          onClick={() => setPersonnes((n) => borner(n + 1))}
-        >
-          +
-        </button>
-        <span>personnes</span>
+      <div className="carte overflow-hidden">
+        <RecipeArt
+          image={recipe.image}
+          titre={recipe.titre}
+          categorie={recipe.categorie}
+          className="md:aspect-[21/9]"
+          eager
+        />
+        <header className="space-y-2 p-5">
+          <span className="badge">
+            <span aria-hidden>{EMOJIS_CATEGORIES[recipe.categorie]}</span>
+            {LIBELLES_CATEGORIES[recipe.categorie]}
+          </span>
+          <h1 className="titre text-3xl sm:text-4xl">{recipe.titre}</h1>
+          {recipe.description && <p className="text-lg text-muted">{recipe.description}</p>}
+        </header>
       </div>
 
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Ingrédients</h2>
-        <ul className="space-y-1">
-          {recipe.ingredients.map((ing) => {
-            const quantite = formatQuantity(ing.quantite, ing.unite, recipe.portions, personnes);
-            return (
-              <li key={ing.id} className="flex gap-2">
-                <span className="min-w-20 font-semibold">{quantite || "au goût"}</span>
-                <span>{ing.nom}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+        <div className="space-y-6 lg:sticky lg:top-20">
+          <div className="carte flex items-center justify-between gap-3 p-4">
+            <span className="font-bold">Pour</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className={rond}
+                aria-label="Moins de personnes"
+                disabled={personnes <= MIN_PERSONNES}
+                onClick={() => setPersonnes((n) => borner(n - 1))}
+              >
+                −
+              </button>
+              <output key={personnes} aria-label="Nombre de personnes" className="titre pop min-w-10 text-center text-3xl">
+                {personnes}
+              </output>
+              <button
+                type="button"
+                className={rond}
+                aria-label="Plus de personnes"
+                disabled={personnes >= MAX_PERSONNES}
+                onClick={() => setPersonnes((n) => borner(n + 1))}
+              >
+                +
+              </button>
+            </div>
+            <span className="font-bold">{personnes > 1 ? "personnes" : "personne"}</span>
+          </div>
 
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Étapes</h2>
-        <ol className="space-y-4">
-          {recipe.etapes.map((etape, i) => (
-            <li key={i} className="flex gap-3">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-600 font-semibold text-white">
-                {i + 1}
-              </span>
-              <div className="space-y-2">
-                {etape.titre && <p className="font-semibold">{etape.titre}</p>}
-                <p>{renderStepText(etape.texte, recipe.ingredients, recipe.portions, personnes)}</p>
-                {etape.chrono_secondes ? <TimerChip secondes={etape.chrono_secondes} /> : null}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+          <section className="carte p-5">
+            <h2 className="titre mb-3 text-2xl">Ingrédients</h2>
+            <ul>
+              {recipe.ingredients.map((ing) => {
+                const quantite = formatQuantity(ing.quantite, ing.unite, recipe.portions, personnes);
+                return (
+                  <li key={ing.id} className="flex gap-3 border-b border-dashed border-ligne py-2 last:border-b-0">
+                    <span
+                      key={quantite}
+                      className={`min-w-20 font-bold text-brand ${personnes === borner(recipe.portions) ? "" : "maj"}`}
+                    >
+                      {quantite || "au goût"}
+                    </span>
+                    <span>{ing.nom}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
 
-      {recipe.notes && (
-        <p className="rounded-lg bg-amber-100 p-3 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
-          <span aria-hidden>💡 </span>
-          {recipe.notes}
-        </p>
-      )}
+        <div className="space-y-6">
+          <section className="carte p-5">
+            <h2 className="titre mb-4 text-2xl">Étapes</h2>
+            <ol className="space-y-5">
+              {recipe.etapes.map((etape, i) => (
+                <li key={i} className="flex gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-bold text-sur-brand">
+                    {i + 1}
+                  </span>
+                  <div className="space-y-2 pt-0.5">
+                    {etape.titre && <p className="titre text-lg">{etape.titre}</p>}
+                    <p>{renderStepText(etape.texte, recipe.ingredients, recipe.portions, personnes)}</p>
+                    {etape.chrono_secondes ? <TimerChip secondes={etape.chrono_secondes} /> : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {recipe.notes && (
+            <p className="info">
+              <span aria-hidden>💡 </span>
+              {recipe.notes}
+            </p>
+          )}
+        </div>
+      </div>
     </article>
   );
 }

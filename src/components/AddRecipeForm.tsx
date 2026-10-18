@@ -77,21 +77,19 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
     setResultat(null);
   }
 
-  const bouton = "min-h-11 rounded-lg px-4 py-2 font-medium";
-
   if (resultat?.type === "ok") {
     return (
       <div className="space-y-4">
-        <p role="status" className="rounded-lg bg-green-100 p-3 text-green-950 dark:bg-green-950 dark:text-green-100">
+        <p role="status" className="succes">
           {resultat.message}
         </p>
         <div className="flex flex-wrap gap-2">
           {resultat.lien && (
-            <a href={resultat.lien} className={`${bouton} bg-orange-600 text-white`}>
+            <a href={resultat.lien} className="btn btn-primary">
               Voir la recette
             </a>
           )}
-          <button type="button" onClick={recommencer} className={`${bouton} border border-neutral-400`}>
+          <button type="button" onClick={recommencer} className="btn btn-secondary">
             Ajouter une autre recette
           </button>
         </div>
@@ -110,24 +108,24 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
         }}
         rows={8}
         placeholder="Colle ici la réponse de Claude avec la recette."
-        className="w-full rounded-lg border border-neutral-300 bg-transparent p-3 font-mono text-sm dark:border-neutral-700"
+        className="champ font-mono text-sm"
       />
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={coller} className={`${bouton} border border-neutral-400`}>
+        <button type="button" onClick={coller} className="btn btn-secondary">
           Coller depuis le presse-papiers
         </button>
         <button
           type="button"
           onClick={envoyer}
           disabled={!lecture?.ok || envoi}
-          className={`${bouton} bg-orange-600 text-white disabled:opacity-40`}
+          className="btn btn-primary"
         >
           {miseAJour ? "Mettre à jour" : "Envoyer"}
         </button>
       </div>
 
       {lecture && !lecture.ok && (
-        <div role="alert" className="space-y-3 rounded-lg bg-red-100 p-3 text-red-950 dark:bg-red-950 dark:text-red-100">
+        <div role="alert" className="alerte space-y-3">
           <ul className="list-disc pl-5">
             {lecture.errors.map((e) => (
               <li key={e}>{e}</li>
@@ -141,7 +139,7 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
       )}
 
       {resultat?.type === "erreurs" && (
-        <div role="alert" className="rounded-lg bg-red-100 p-3 text-red-950 dark:bg-red-950 dark:text-red-100">
+        <div role="alert" className="alerte">
           <ul className="list-disc pl-5">
             {resultat.erreurs.map((e) => (
               <li key={e}>{e}</li>
@@ -153,13 +151,13 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
       {lecture?.ok && (
         <>
           {lecture.warnings.length > 0 && (
-            <ul className="list-disc rounded-lg bg-amber-100 p-3 pl-8 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+            <ul className="info list-disc pl-8">
               {lecture.warnings.map((w) => (
                 <li key={w}>{w}</li>
               ))}
             </ul>
           )}
-          <section aria-label="Aperçu" className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <section aria-label="Aperçu" className="carte p-4">
             <RecipeView key={texte} recipe={lecture.recipe} />
           </section>
         </>

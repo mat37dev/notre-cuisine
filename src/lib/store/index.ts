@@ -1,3 +1,5 @@
+import { hashToken } from "../auth";
+import { RECETTES_DEMO } from "../dev-demo";
 import { EXEMPLE_RECETTE } from "../recipe/prompts";
 import { MemoryStore } from "./memory";
 import { SupabaseStore } from "./supabase";
@@ -11,9 +13,30 @@ const globale = globalThis as typeof globalThis & { __ncDevStore?: Store };
 /** Développement local sans Supabase : une base en mémoire avec une recette d'exemple. */
 function baseDeDeveloppement(): Store {
   if (!globale.__ncDevStore) {
-    const store = new MemoryStore();
-    void store.insertRecipe({ status: "published", authorId: null, recipe: EXEMPLE_RECETTE });
-    globale.__ncDevStore = store;
+    const brut = new MemoryStore();
+    const store: Store = brut;
+    const prete = (async () => {
+      for (const recipe of [EXEMPLE_RECETTE, ...RECETTES_DEMO]) {
+        await store.insertRecipe({ status: "published", authorId: null, recipe });
+      }
+      // Un administrateur de démonstration : en développement, le cookie `nc_device=dev-admin` le donne.
+      const admin = await store.createProfile("Démo", "admin");
+      const demain = new Date(Date.now() + 86_400_000).toISOString();
+      await store.createInvite(admin.id, "Navigateur de démo", hashToken("dev-invite"), demain);
+      await store.claimInvite(hashToken("dev-invite"), hashToken("dev-admin"), new Date().toISOString());
+    })();
+    // Chaque appel attend la fin de la préparation : la première page ouverte ne voit jamais une base à moitié remplie.
+    globale.__ncDevStore = new Proxy(brut, {
+      get(cible, nom) {
+        const valeur = Reflect.get(cible, nom) as unknown;
+        return typeof valeur === "function"
+          ? async (...args: unknown[]) => {
+              await prete;
+              return (valeur as (...a: unknown[]) => unknown).apply(cible, args);
+            }
+          : valeur;
+      },
+    });
     console.warn("Supabase n'est pas configuré : base en mémoire (les données disparaissent à l'arrêt).");
   }
   return globale.__ncDevStore;
