@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "invite": "tsx scripts/create-invite.ts",
+    "invite": "tsx scripts/create-invite.mts",
     "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
