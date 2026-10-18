@@ -38,6 +38,8 @@ describe("GET /api/sante", () => {
     expect(json).toEqual({
       ok: true,
       base: "ok",
+      adresse: "ok",
+      cle: "format inconnu (ni sb_secret_, ni JWT)",
       variables: {
         SUPABASE_URL: true,
         SUPABASE_SERVICE_ROLE_KEY: true,
@@ -94,5 +96,22 @@ describe("GET /api/sante", () => {
 describe("calcul à chaque appel", () => {
   test("la route est dynamique : sans cela Next la calcule une fois à la construction et affiche un état périmé", () => {
     expect(dynamic).toBe("force-dynamic");
+  });
+});
+
+describe("diagnostic de la clé", () => {
+  test("clé refusée : dit de quel type est la clé collée, sans la recopier", async () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "sb_publishable_CorpsDeLaCle42");
+    setStoreForTests(storeQuiEchoue("Base de données : Invalid API key"));
+    const { json, texte } = await appeler();
+    expect(json.base).toBe("clé refusée : vérifie SUPABASE_SERVICE_ROLE_KEY");
+    expect(json.cle).toContain("clé publique");
+    expect(texte).not.toContain("CorpsDeLaCle42");
+  });
+
+  test("adresse avec des guillemets : signalée", async () => {
+    vi.stubEnv("SUPABASE_URL", '"https://exemple.supabase.co"');
+    setStoreForTests(new MemoryStore());
+    expect((await appeler()).json.adresse).toContain("espaces, guillemets");
   });
 });
