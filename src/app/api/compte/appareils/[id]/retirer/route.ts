@@ -1,14 +1,12 @@
-import { json, viewerFromRequest } from "@/lib/http";
-import { getStore } from "@/lib/store";
+import { requireDevice } from "@/lib/compte-api";
+import { json } from "@/lib/http";
 
-/** Retire un de SES appareils. On peut retirer celui qu'on utilise : on est alors déconnecté. */
+/** Retire un de SES appareils ou jetons. On peut retirer celui qu'on utilise : on est alors déconnecté. */
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const store = getStore();
-  const viewer = await viewerFromRequest(request, store);
-  if (viewer.role === "visitor" || !viewer.profileId) {
-    return json({ erreur: "Cet appareil n'est pas reconnu." }, 403);
-  }
+  const acces = await requireDevice(request, "Cet appareil n'est pas reconnu.");
+  if (!acces.ok) return acces.res;
+  const { store, viewer } = acces;
   const appareil = (await store.listDevices()).find(
     (d) => d.id === id && d.profileId === viewer.profileId && d.revokedAt === null,
   );
