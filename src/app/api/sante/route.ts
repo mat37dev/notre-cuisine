@@ -1,4 +1,5 @@
 import { json } from "@/lib/http";
+import { decrireAdresse, decrireCle } from "@/lib/key-info";
 import { getStore } from "@/lib/store";
 
 // Sans cela, Next calcule cette route une seule fois à la construction du site (elle ne lit pas la requête)
@@ -31,5 +32,8 @@ export async function GET() {
       : expliquer(message);
   }
   const ok = base === "ok";
-  return json({ ok, base, variables }, ok ? 200 : 503);
+  // adresse et clé : seulement leur forme (type de clé, projet), jamais leur contenu
+  const adresse = decrireAdresse(process.env.SUPABASE_URL);
+  const cle = decrireCle(process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.SUPABASE_URL);
+  return json({ ok, base, adresse, cle, variables }, ok ? 200 : 503);
 }
