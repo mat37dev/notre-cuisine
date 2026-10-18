@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
+import { ImageField } from "./ImageField";
 import { CATEGORIES, type Categorie, type Recipe, type Unite } from "@/lib/recipe/types";
 
 const LIBELLES_UNITES: Array<[Unite, string]> = [
@@ -103,6 +104,7 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
 
   return (
     <form onSubmit={enregistrer} className="space-y-6">
+      {recipe.id && <ImageField recipeId={recipe.id} titre={recipe.titre} image={recipe.image} />}
       <div className="space-y-3">
         <label className="block">
           Titre

@@ -26,6 +26,8 @@ const ALIAS_CLES: Record<string, string> = {
   content: "texte",
   text: "texte",
   timer_seconds: "chrono_secondes",
+  photo: "image",
+  image_url: "image",
 };
 
 const UNITES_ALIAS: Record<Exclude<Unite, "">, string[]> = {
@@ -243,5 +245,10 @@ export function parseRecipeBlock(text: string): ParseResult {
   if (description) recipe.description = description;
   const notes = texteOuVide(brut.notes);
   if (notes) recipe.notes = notes;
+  const image = texteOuVide(brut.image);
+  if (image) {
+    if (/^https:\/\/\S+$/.test(image) && image.length <= 500) recipe.image = image;
+    else warnings.push("L'image est ignorée : il faut une adresse commençant par https:// (500 caractères au maximum).");
+  }
   return { ok: true, recipe, warnings };
 }

@@ -38,7 +38,9 @@ export async function submitRecipe(
     const existante = await store.getRecipe(recipe.id);
     if (!existante) return fail("not_found");
     if (!canEdit(viewer, existante)) return fail("forbidden");
-    const maj = await store.updateRecipe(existante.id, { recipe });
+    // un bloc renvoyé par Claude oublie souvent l'image : on garde celle qui existe
+    const aGarder = !recipe.image && existante.recipe.image ? { ...recipe, image: existante.recipe.image } : recipe;
+    const maj = await store.updateRecipe(existante.id, { recipe: aGarder });
     return maj ? ok(maj) : fail("not_found");
   }
 

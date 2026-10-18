@@ -53,6 +53,7 @@ Format :
 - ingredients : une liste d'objets avec id, nom, quantite, unite. L'id est un mot court sans espace (ex. "tomates"). L'unite est g, kg, ml, l, cas (cuillère à soupe), cac (cuillère à café), pincee, piece, ou "" (rien : « 3 oignons »). La quantite est un nombre (ex. 1.5), ou absente si c'est « au goût ».
 - etapes : une liste d'objets avec titre, texte, chrono_secondes. Mets chrono_secondes seulement s'il y a un temps à chronométrer (cuisson, repos), en secondes.
 - notes : astuces (facultatif).
+- image : l'adresse https d'une image, seulement si je t'en donne une (facultatif, n'en invente jamais). Je pourrai aussi ajouter une photo directement sur le site.
 
 Règles :
 - Des quantités rondes et faciles à diviser, de préférence en g et en ml.

@@ -16,6 +16,15 @@ export function RecipeView({ recipe }: { recipe: Recipe }) {
 
   return (
     <article className="space-y-6">
+      {recipe.image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={recipe.image}
+          alt={recipe.titre}
+          className="aspect-[16/10] w-full rounded-2xl object-cover"
+          loading="eager"
+        />
+      )}
       <header className="space-y-2">
         <h1 className="text-3xl font-bold">{recipe.titre}</h1>
         {recipe.description && <p className="text-neutral-600 dark:text-neutral-300">{recipe.description}</p>}

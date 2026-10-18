@@ -71,6 +71,18 @@ export function runStoreContract(name: string, make: () => Promise<Store>) {
       });
     });
 
+    describe("images", () => {
+      const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+
+      test("putImage renvoie une adresse, deleteImage ne lève pas d'erreur (même sans image)", async () => {
+        const row = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+        const url = await store.putImage(row.id, jpeg, "image/jpeg");
+        expect(url).toMatch(/^(https?:\/\/|data:|\/)/);
+        await expect(store.deleteImage(row.id)).resolves.toBeUndefined();
+        await expect(store.deleteImage(row.id)).resolves.toBeUndefined();
+      });
+    });
+
     describe("profils, invitations et appareils", () => {
       test("relit un profil", async () => {
         const p = await store.createProfile("Mathieu", "admin");

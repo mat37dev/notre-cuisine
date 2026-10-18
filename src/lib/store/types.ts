@@ -35,6 +35,9 @@ export interface Store {
   getRecipe(idOrSlug: string): Promise<RecipeRow | null>;
   listRecipes(filter?: { status?: Status }): Promise<RecipeRow[]>;
   deleteRecipe(id: string): Promise<boolean>;
+  /** Enregistre la photo d'une recette et renvoie son adresse publique. */
+  putImage(recipeId: string, octets: Uint8Array, contentType: string): Promise<string>;
+  deleteImage(recipeId: string): Promise<void>;
 
   createProfile(name: string, role: Role): Promise<Profile>;
   getProfile(id: string): Promise<Profile | null>;

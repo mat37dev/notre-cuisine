@@ -25,6 +25,8 @@ export type Recipe = {
   id?: string;
   titre: string;
   description?: string;
+  /** Adresse https d'une image de présentation (envoyée depuis le site, ou donnée dans le bloc). */
+  image?: string;
   portions: number;
   categorie: Categorie;
   tags: string[];

@@ -21,6 +21,9 @@ type DbDevice = {
   revoked_at: string | null;
 };
 
+const BUCKET_IMAGES = "recipe-images";
+const EXTENSIONS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function ok<T>(res: { data: T; error: { message: string } | null }): T {
@@ -115,6 +118,26 @@ export class SupabaseStore implements Store {
     if (!UUID.test(id)) return false;
     const res = await this.db.from("recipes").delete().eq("id", id).select("id");
     return (ok(res) as unknown[]).length > 0;
+  }
+
+  async putImage(recipeId: string, octets: Uint8Array, contentType: string): Promise<string> {
+    const extension = EXTENSIONS[contentType];
+    if (!extension) throw new Error(`Stockage des images : type ${contentType} non pris en charge`);
+    await this.deleteImage(recipeId); // une photo à la fois, même si le format change
+    const chemin = `${recipeId}.${extension}`;
+    const { error } = await this.db.storage
+      .from(BUCKET_IMAGES)
+      .upload(chemin, octets, { contentType, upsert: true, cacheControl: "31536000" });
+    if (error) throw new Error(`Stockage des images : ${error.message}`);
+    const { data } = this.db.storage.from(BUCKET_IMAGES).getPublicUrl(chemin);
+    return `${data.publicUrl}?v=${Date.now()}`; // ?v= : le navigateur recharge la nouvelle photo
+  }
+
+  async deleteImage(recipeId: string): Promise<void> {
+    if (!UUID.test(recipeId)) return;
+    const chemins = Object.values(EXTENSIONS).map((e) => `${recipeId}.${e}`);
+    const { error } = await this.db.storage.from(BUCKET_IMAGES).remove(chemins);
+    if (error) throw new Error(`Stockage des images : ${error.message}`);
   }
 
   async createProfile(name: string, role: Role): Promise<Profile> {
