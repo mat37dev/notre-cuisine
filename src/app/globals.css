@@ -114,7 +114,8 @@ body {
     @apply inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-ligne bg-papier px-4 text-sm font-semibold;
     @apply hover:border-brand;
   }
-  .puce[aria-current="true"] {
+  .puce[aria-current="true"],
+  .puce[aria-pressed="true"] {
     @apply border-brand bg-brand text-sur-brand;
   }
 
@@ -126,5 +127,101 @@ body {
   }
   .succes {
     @apply rounded-xl bg-brand-doux p-3 font-semibold text-brand-fort;
+  }
+}
+
+/* ---------- Animations ---------- */
+
+/* Passage doux d'une page à l'autre (Chrome, Edge, Safari récents) ; l'en-tête reste en place. */
+@view-transition {
+  navigation: auto;
+}
+.entete-site {
+  view-transition-name: entete;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+}
+/* Les cartes qui changent de place (tri, filtre) glissent au lieu de sauter. */
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Les cartes apparaissent en fondu, l'une après l'autre (--i = leur rang, plafonné à 12). */
+.carte-liste {
+  animation: apparition 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.pop {
+  animation: pop 0.3s ease-out;
+}
+
+@keyframes surbrillance {
+  from {
+    background-color: var(--beurre);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.maj {
+  border-radius: 0.375rem;
+  animation: surbrillance 0.9s ease-out;
+}
+
+@keyframes pulsation {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+.chrono-en-marche {
+  animation: pulsation 1.6s ease-in-out infinite;
+}
+
+/* Pour qui a demandé « réduire les animations » dans son appareil : plus aucun mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

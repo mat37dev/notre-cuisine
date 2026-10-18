@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { InstallButton } from "./InstallButton";
 import { getCurrentViewer } from "@/lib/session";
 
 export async function SiteHeader() {
   const viewer = await getCurrentViewer();
   const lien = "whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-semibold hover:bg-brand-doux";
   return (
-    <header className="sticky top-0 z-20 border-b border-ligne bg-fond/85 backdrop-blur">
+    <header className="entete-site sticky top-0 z-20 border-b border-ligne bg-fond/85 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2">
         <Link href="/" className="flex items-center gap-2 whitespace-nowrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,6 +40,7 @@ export async function SiteHeader() {
               Admin
             </Link>
           )}
+          <InstallButton variante="entete" />
           <Link href="/ajouter" className="btn btn-primary !min-h-10 !px-3.5 whitespace-nowrap text-sm">
             + Ajouter
           </Link>

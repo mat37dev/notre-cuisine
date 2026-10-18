@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton, InviteForm } from "@/components/AdminActions";
+import { InstallButton } from "@/components/InstallButton";
 import { LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
 import { listPending } from "@/lib/service";
 import { getCurrentViewer } from "@/lib/session";
@@ -102,6 +103,14 @@ export default async function PageAdmin() {
           <h3 className="font-bold">Inviter quelqu’un</h3>
           <InviteForm />
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="titre text-2xl">Installer l’appli</h2>
+        <p className="text-sm text-muted">
+          Une icône « Notre cuisine » sur l’écran d’accueil de cet appareil, qui s’ouvre en plein écran.
+        </p>
+        <InstallButton />
       </section>
 
       <section className="space-y-2">

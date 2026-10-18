@@ -98,7 +98,7 @@ export function TimerChip({ secondes }: { secondes: number }) {
   const icone = etat.type === "marche" ? "⏸" : "▶";
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <button type="button" className={style} onClick={clic}>
+      <button type="button" className={`${style} ${etat.type === "marche" ? "chrono-en-marche" : ""}`} onClick={clic}>
         <span aria-hidden>{icone}</span> {formatClock(ms)}
       </button>
       {android && etat.type === "repos" && (

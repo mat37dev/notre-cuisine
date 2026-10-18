@@ -51,7 +51,7 @@ export function RecipeView({ recipe }: { recipe: Recipe }) {
               >
                 −
               </button>
-              <output aria-label="Nombre de personnes" className="titre min-w-10 text-center text-3xl">
+              <output key={personnes} aria-label="Nombre de personnes" className="titre pop min-w-10 text-center text-3xl">
                 {personnes}
               </output>
               <button
@@ -74,7 +74,12 @@ export function RecipeView({ recipe }: { recipe: Recipe }) {
                 const quantite = formatQuantity(ing.quantite, ing.unite, recipe.portions, personnes);
                 return (
                   <li key={ing.id} className="flex gap-3 border-b border-dashed border-ligne py-2 last:border-b-0">
-                    <span className="min-w-20 font-bold text-brand">{quantite || "au goût"}</span>
+                    <span
+                      key={quantite}
+                      className={`min-w-20 font-bold text-brand ${personnes === borner(recipe.portions) ? "" : "maj"}`}
+                    >
+                      {quantite || "au goût"}
+                    </span>
                     <span>{ing.nom}</span>
                   </li>
                 );

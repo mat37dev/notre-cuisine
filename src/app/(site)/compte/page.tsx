@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActionButton, InviteForm } from "@/components/AdminActions";
+import { InstallButton } from "@/components/InstallButton";
 import { getCurrentViewer } from "@/lib/session";
 import { getStore } from "@/lib/store";
 
@@ -69,6 +70,14 @@ export default async function PageCompte() {
             );
           })}
         </ul>
+      </section>
+
+      <section className="carte space-y-3 p-4">
+        <h2 className="titre text-xl">Installer l’appli sur cet appareil</h2>
+        <p className="text-sm text-muted">
+          Une icône « Notre cuisine » sur l’écran d’accueil, qui s’ouvre en plein écran comme une vraie appli.
+        </p>
+        <InstallButton />
       </section>
 
       <section className="carte space-y-3 p-4">
