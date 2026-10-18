@@ -46,4 +46,9 @@ describe("GET /api/cron/keepalive", () => {
     const conf = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8"));
     expect(conf.crons).toEqual([{ path: "/api/cron/keepalive", schedule: "0 6 * * 1" }]);
   });
+
+  test("vercel.json impose Next.js : sans cela, un projet Vercel créé avant le code ne sert que le dossier public", () => {
+    const conf = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8"));
+    expect(conf.framework).toBe("nextjs");
+  });
 });

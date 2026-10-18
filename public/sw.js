@@ -4,7 +4,7 @@ const VERSION = "nc-v1";
 const STATIQUE = VERSION + "-statique";
 const PAGES = VERSION + "-pages";
 
-const IGNORER = [/^\/admin(\/|$)/, /^\/invite\//, /^\/api\/admin(\/|$)/, /^\/api\/cron(\/|$)/, /^\/ajouter\/partage/];
+const IGNORER = [/^\/admin(\/|$)/, /^\/invite\//, /^\/api\/admin(\/|$)/, /^\/api\/cron(\/|$)/, /^\/api\/sante$/, /^\/ajouter\/partage/];
 
 const PAGE_HORS_LIGNE =
   '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +

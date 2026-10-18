@@ -24,6 +24,7 @@ describe("service worker : quoi mettre en cache", () => {
     "/invite/abc123",
     "/api/admin/export",
     "/api/cron/keepalive",
+    "/api/sante",
     "/ajouter/partage",
   ])("%s n'est jamais mis en cache", (chemin) => {
     expect(tri(chemin)).toBe("ignorer");
