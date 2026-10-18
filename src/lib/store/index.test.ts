@@ -12,8 +12,10 @@ describe("getStore", () => {
     vi.stubEnv("SUPABASE_URL", "");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
     const rows = await getStore().listRecipes({ status: "published" });
-    expect(rows).toHaveLength(1);
-    expect(rows[0].recipe.titre).toBe("Salade italienne à la burrata");
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    expect(rows.map((r) => r.recipe.titre)).toContain("Salade italienne à la burrata");
+    expect(new Set(rows.map((r) => r.recipe.categorie)).size).toBeGreaterThanOrEqual(4); // catégories variées pour voir le thème
+    expect(rows.every((r) => r.recipe.ingredients.length > 0 && r.recipe.etapes.length > 0)).toBe(true);
   });
 
   test("en production sans Supabase : erreur claire (pas de base cachée en mémoire)", () => {
