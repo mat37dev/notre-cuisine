@@ -12,8 +12,8 @@ export default async function PageModifier({ params }: { params: Promise<{ id: s
   const [row, viewer] = await Promise.all([getStore().getRecipe(id), getCurrentViewer()]);
   if (!row || !canEdit(viewer, row)) notFound();
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
-      <h1 className="text-2xl font-bold">Modifier « {row.recipe.titre} »</h1>
+    <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+      <h1 className="titre text-3xl">Modifier « {row.recipe.titre} »</h1>
       <RecipeEditor recipe={row.recipe} slug={row.slug} />
     </main>
   );

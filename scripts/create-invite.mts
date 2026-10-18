@@ -1,13 +1,14 @@
 // Crée une personne et son lien d'invitation : npm run invite -- --role admin --name Mathieu
-// Lit SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY dans .env.local (ou dans l'environnement).
+// Lit SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY dans .env.production.local (ou dans l'environnement).
+// Ce fichier-là n'est JAMAIS lu par « npm run dev » : le site local ne touche donc jamais à la vraie base.
 import { createInviteLink } from "../src/lib/auth";
 import { parseInviteArgs } from "../src/lib/invite-cli";
 import { SupabaseStore } from "../src/lib/store/supabase";
 
 try {
-  process.loadEnvFile(".env.local");
+  process.loadEnvFile(".env.production.local");
 } catch {
-  // pas de .env.local : on utilise l'environnement tel quel
+  // pas de fichier : on utilise l'environnement tel quel
 }
 
 const args = parseInviteArgs(process.argv.slice(2));

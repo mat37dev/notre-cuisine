@@ -1,26 +1,130 @@
 @import "tailwindcss";
 
+/* Thème « cuisine » : crème, terracotta et herbes. Clair par défaut, brun chaud la nuit. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --fond: #fbf5ea;
+  --papier: #fffdf8;
+  --encre: #2f2418;
+  --muted: #7b6955;
+  --ligne: #ead9bf;
+  --brand: #c2410c;
+  --brand-fort: #9a3412;
+  --brand-doux: #fde7d3;
+  --sur-brand: #ffffff;
+  --herbe: #4d7c3a;
+  --beurre: #fcefc2;
+  --danger: #b42318;
+  --danger-doux: #fde4e1;
+  --ombre: 0 1px 2px rgb(60 36 12 / 0.06), 0 6px 18px rgb(60 36 12 / 0.07);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --fond: #1b1410;
+    --papier: #251c16;
+    --encre: #f4eadb;
+    --muted: #b9a78f;
+    --ligne: #3b2d22;
+    --brand: #f0814d;
+    --brand-fort: #f6a074;
+    --brand-doux: #3d2417;
+    --sur-brand: #2a1308;
+    --herbe: #8fbf73;
+    --beurre: #3b3115;
+    --danger: #ff8a7a;
+    --danger-doux: #3b1b17;
+    --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
   }
 }
 
+@theme inline {
+  --color-fond: var(--fond);
+  --color-papier: var(--papier);
+  --color-encre: var(--encre);
+  --color-muted: var(--muted);
+  --color-ligne: var(--ligne);
+  --color-brand: var(--brand);
+  --color-brand-fort: var(--brand-fort);
+  --color-brand-doux: var(--brand-doux);
+  --color-sur-brand: var(--sur-brand);
+  --color-herbe: var(--herbe);
+  --color-beurre: var(--beurre);
+  --color-danger: var(--danger);
+  --color-danger-doux: var(--danger-doux);
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--fond);
+  /* petits points discrets, comme un papier de carnet */
+  background-image: radial-gradient(color-mix(in srgb, var(--ligne) 65%, transparent) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  color: var(--encre);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+::selection {
+  background: var(--brand-doux);
+}
+
+@layer components {
+  .titre {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+  }
+
+  .carte {
+    @apply rounded-2xl border border-ligne bg-papier;
+    box-shadow: var(--ombre);
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full bg-brand-doux px-2.5 py-0.5 text-xs font-bold text-brand-fort;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-bold transition;
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-40;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-primary {
+    @apply bg-brand text-sur-brand hover:bg-brand-fort;
+  }
+  .btn-secondary {
+    @apply border border-ligne bg-papier text-encre hover:border-brand;
+  }
+  .btn-danger {
+    @apply border border-danger text-danger hover:bg-danger-doux;
+  }
+
+  .champ {
+    @apply min-h-11 w-full rounded-xl border border-ligne bg-papier px-3 py-2 text-encre placeholder:text-muted;
+    @apply focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none;
+  }
+
+  .puce {
+    @apply inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-ligne bg-papier px-4 text-sm font-semibold;
+    @apply hover:border-brand;
+  }
+  .puce[aria-current="true"] {
+    @apply border-brand bg-brand text-sur-brand;
+  }
+
+  .alerte {
+    @apply rounded-xl bg-danger-doux p-3 text-danger;
+  }
+  .info {
+    @apply rounded-xl bg-beurre p-3;
+  }
+  .succes {
+    @apply rounded-xl bg-brand-doux p-3 font-semibold text-brand-fort;
+  }
 }

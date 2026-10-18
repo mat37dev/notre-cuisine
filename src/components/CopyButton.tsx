@@ -22,7 +22,7 @@ export function CopyButton({ text, label, className = "" }: { text: string; labe
     <button
       type="button"
       onClick={copier}
-      className={`rounded-lg bg-orange-600 px-4 py-2 font-medium text-white active:bg-orange-700 ${className}`}
+      className={`btn btn-primary ${className}`}
     >
       {texte}
     </button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
+import { RecipeArt } from "@/components/RecipeArt";
+import { EMOJIS_CATEGORIES, LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
 import { CATEGORIES } from "@/lib/recipe/types";
 import { listPublished } from "@/lib/service";
 import { getStore } from "@/lib/store";
@@ -16,65 +17,80 @@ export default async function Accueil({ searchParams }: Props) {
     const s = p.toString();
     return s ? `/?${s}` : "/";
   };
-  const puce = (actif: boolean) =>
-    `whitespace-nowrap rounded-full border px-4 py-2 text-sm ${
-      actif ? "border-orange-600 bg-orange-600 text-white" : "border-neutral-300 dark:border-neutral-700"
-    }`;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
-      <form action="/" className="flex gap-2">
-        {categorie && <input type="hidden" name="categorie" value={categorie} />}
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
-          placeholder="Chercher une recette ou un ingrédient"
-          aria-label="Chercher"
-          className="min-h-11 flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 dark:border-neutral-700"
-        />
-        <button type="submit" className="min-h-11 rounded-lg bg-orange-600 px-4 font-medium text-white">
-          Chercher
-        </button>
-      </form>
+    <main className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+      <section className="space-y-4 text-center">
+        <h1 className="titre text-4xl sm:text-5xl">Qu’est-ce qu’on mange ?</h1>
+        <p className="mx-auto max-w-xl text-muted">Toutes nos recettes, au même endroit, à portée de main en cuisine.</p>
+        <form action="/" className="mx-auto flex max-w-xl gap-2">
+          {categorie && <input type="hidden" name="categorie" value={categorie} />}
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Une recette, un ingrédient…"
+            aria-label="Chercher"
+            className="champ"
+          />
+          <button type="submit" className="btn btn-primary">
+            Chercher
+          </button>
+        </form>
+      </section>
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href()} className={puce(!categorie)}>
+      <nav aria-label="Catégories" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:justify-center">
+        <Link href={href()} className="puce" aria-current={!categorie}>
           Toutes
         </Link>
         {CATEGORIES.map((c) => (
-          <Link key={c} href={href(c)} className={puce(categorie === c)}>
-            {LIBELLES_CATEGORIES[c]}
+          <Link key={c} href={href(c)} className="puce" aria-current={categorie === c}>
+            <span aria-hidden>{EMOJIS_CATEGORIES[c]}</span> {LIBELLES_CATEGORIES[c]}
           </Link>
         ))}
-      </div>
+      </nav>
 
       {rows.length === 0 ? (
-        <p className="py-8 text-center text-neutral-500">
-          {q || categorie ? "Aucune recette ne correspond." : "Pas encore de recette. "}
+        <div className="carte mx-auto max-w-md space-y-3 p-8 text-center">
+          <p className="text-5xl" aria-hidden>
+            🍳
+          </p>
+          <p className="text-muted">
+            {q || categorie ? "Aucune recette ne correspond." : "Pas encore de recette. Ajoute la première !"}
+          </p>
           {!q && !categorie && (
-            <Link href="/ajouter" className="underline">
-              Ajoute la première !
+            <Link href="/ajouter" className="btn btn-primary">
+              Ajouter une recette
             </Link>
           )}
-        </p>
+        </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((row) => (
             <li key={row.id}>
               <Link
                 href={`/recettes/${row.slug}`}
-                className="block h-full rounded-xl border border-neutral-200 p-4 hover:border-orange-600 dark:border-neutral-800"
+                className="carte group block h-full overflow-hidden transition hover:-translate-y-0.5 hover:border-brand"
               >
-                <span className="text-xs font-medium uppercase tracking-wide text-orange-700 dark:text-orange-300">
-                  {LIBELLES_CATEGORIES[row.recipe.categorie]}
-                </span>
-                <h2 className="text-lg font-semibold">{row.recipe.titre}</h2>
-                {row.recipe.description && (
-                  <p className="line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
-                    {row.recipe.description}
+                <RecipeArt
+                  image={row.recipe.image}
+                  titre={row.recipe.titre}
+                  categorie={row.recipe.categorie}
+                  className="transition duration-300 group-hover:scale-[1.03]"
+                />
+                <div className="space-y-1.5 p-4">
+                  <span className="badge">
+                    <span aria-hidden>{EMOJIS_CATEGORIES[row.recipe.categorie]}</span>
+                    {LIBELLES_CATEGORIES[row.recipe.categorie]}
+                  </span>
+                  <h2 className="titre text-xl">{row.recipe.titre}</h2>
+                  {row.recipe.description && (
+                    <p className="line-clamp-2 text-sm text-muted">{row.recipe.description}</p>
+                  )}
+                  <p className="text-sm font-semibold text-herbe">
+                    Pour {row.recipe.portions} {row.recipe.portions > 1 ? "personnes" : "personne"}
                   </p>
-                )}
+                </div>
               </Link>
             </li>
           ))}

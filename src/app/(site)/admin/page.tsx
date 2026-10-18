@@ -23,28 +23,28 @@ export default async function PageAdmin() {
   const attente = enAttente.ok ? enAttente.value : [];
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 p-4">
-      <h1 className="text-2xl font-bold">Administration</h1>
+    <main className="mx-auto max-w-4xl space-y-8 px-4 py-6">
+      <h1 className="titre text-3xl">Administration</h1>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Recettes en attente ({attente.length})</h2>
+        <h2 className="titre text-2xl">Recettes en attente ({attente.length})</h2>
         {attente.length === 0 ? (
-          <p className="text-neutral-500">Rien à valider pour le moment.</p>
+          <p className="text-muted">Rien à valider pour le moment.</p>
         ) : (
           <ul className="space-y-3">
             {attente.map((row) => (
-              <li key={row.id} className="space-y-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-                <p className="text-xs font-medium uppercase tracking-wide text-orange-700 dark:text-orange-300">
+              <li key={row.id} className="carte space-y-2 p-4">
+                <p className="badge">
                   {LIBELLES_CATEGORIES[row.recipe.categorie]} · envoyée le {date(row.createdAt)}
                 </p>
-                <Link href={`/recettes/${row.slug}`} className="text-lg font-semibold underline">
+                <Link href={`/recettes/${row.slug}`} className="titre text-xl underline">
                   {row.recipe.titre}
                 </Link>
                 <div className="flex flex-wrap gap-2">
                   <ActionButton url={`/api/admin/valider/${row.id}`} label="Valider" style="primaire" />
                   <Link
                     href={`/recettes/${row.slug}/modifier`}
-                    className="inline-flex min-h-11 items-center rounded-lg border border-neutral-400 px-4 font-medium"
+                    className="btn btn-secondary"
                   >
                     Modifier
                   </Link>
@@ -62,24 +62,24 @@ export default async function PageAdmin() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Personnes et appareils</h2>
+        <h2 className="titre text-2xl">Personnes et appareils</h2>
         <ul className="space-y-4">
           {profils.map((p) => {
             const siens = appareils.filter((d) => d.profileId === p.id && d.revokedAt === null);
             return (
-              <li key={p.id} className="space-y-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+              <li key={p.id} className="carte space-y-2 p-4">
                 <p className="font-semibold">
-                  {p.name} <span className="font-normal text-neutral-500">({p.role === "admin" ? "admin" : "membre"})</span>
+                  {p.name} <span className="font-normal text-muted">({p.role === "admin" ? "admin" : "membre"})</span>
                 </p>
                 {siens.length === 0 ? (
-                  <p className="text-sm text-neutral-500">Aucun appareil reconnu.</p>
+                  <p className="text-sm text-muted">Aucun appareil reconnu.</p>
                 ) : (
                   <ul className="space-y-2">
                     {siens.map((d) => (
                       <li key={d.id} className="flex flex-wrap items-center justify-between gap-2">
                         <span>
                           {d.label}
-                          <span className="block text-sm text-neutral-500">
+                          <span className="block text-sm text-muted">
                             reconnu le {date(d.createdAt)}, vu le {date(d.lastSeenAt)}
                           </span>
                         </span>
@@ -98,19 +98,19 @@ export default async function PageAdmin() {
             );
           })}
         </ul>
-        <div className="space-y-2 rounded-xl border border-dashed border-neutral-400 p-4">
-          <h3 className="font-semibold">Inviter quelqu’un</h3>
+        <div className="carte space-y-2 border-dashed p-4">
+          <h3 className="font-bold">Inviter quelqu’un</h3>
           <InviteForm />
         </div>
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-xl font-semibold">Sauvegarde</h2>
-        <p className="text-sm text-neutral-500">Télécharge toutes les recettes (publiées et en attente) dans un fichier.</p>
+        <h2 className="titre text-2xl">Sauvegarde</h2>
+        <p className="text-sm text-muted">Télécharge toutes les recettes (publiées et en attente) dans un fichier.</p>
         <a
           href="/api/admin/export"
           download
-          className="inline-flex min-h-11 items-center rounded-lg border border-neutral-400 px-4 font-medium"
+          className="btn btn-secondary"
         >
           Exporter les recettes
         </a>

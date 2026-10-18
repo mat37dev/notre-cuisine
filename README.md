@@ -6,19 +6,21 @@ Petit site de recettes en commun, pensé pour le téléphone (appli installable 
 
 ## Ce que fait le site
 
-- Recettes avec choix du nombre de personnes (quantités recalculées et lisibles) et chronos.
+- Recettes avec choix du nombre de personnes (quantités recalculées et lisibles), chronos et photo de présentation.
 - Ajout depuis Claude : un bloc au format fixe, à copier ou à partager vers l'appli.
 - Trois niveaux d'accès : admin (valide, modifie, supprime, invite), membre reconnue (publie tout de suite), visiteur (en attente de validation).
-- Claude peut chercher et lire les recettes : `/api/recettes` et la page `/claude`.
+- Claude peut chercher et lire les recettes : `/api/recettes`. Sa documentation complète est sur `/docs` (aussi `/readme` et `/llms.txt`) ; la page `/claude` donne les instructions à coller.
+- Chaque personne gère ses appareils sur `/compte`.
 
 ## Développer
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000, sans Supabase : base en mémoire avec une recette d'exemple
+npm run dev      # http://localhost:3000, sans Supabase : base en mémoire avec une recette d'exemple.
+                 # Pour voir les écrans réservés : cookie `nc_device=dev-admin` (administrateur de démonstration).
 npm test         # tests (Vitest)
 npm run build    # vérifie que tout se construit
-npm run invite -- --role admin --name Prénom   # crée un lien d'invitation (demande les clés Supabase dans .env.local)
+npm run invite -- --role admin --name Prénom   # crée un lien d'invitation (demande les clés Supabase dans .env.production.local, jamais lu par npm run dev)
 npm run icons    # refait les icônes de l'appli
 ```
 

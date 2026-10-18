@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { CopyButton } from "./CopyButton";
 
 const STYLES = {
-  primaire: "bg-orange-600 text-white",
-  danger: "border border-red-600 text-red-700 dark:text-red-400",
-  neutre: "border border-neutral-400",
+  primaire: "btn-primary",
+  danger: "btn-danger",
+  neutre: "btn-secondary",
 };
 
 /** Bouton qui appelle une adresse du site puis rafraîchit la page (ou va ailleurs). */
@@ -56,12 +56,12 @@ export function ActionButton({
         type="button"
         onClick={clic}
         disabled={occupe}
-        className={`min-h-11 rounded-lg px-4 py-2 font-medium disabled:opacity-40 ${STYLES[style]}`}
+        className={`btn ${STYLES[style]}`}
       >
         {label}
       </button>
       {erreur && (
-        <span role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <span role="alert" className="text-sm font-semibold text-danger">
           {erreur}
         </span>
       )}
@@ -135,12 +135,12 @@ export function InviteForm({
       <div className="flex flex-wrap items-end gap-2">
         {avecNomAppareil && (
           <label className="flex flex-col text-sm">
-            Nom de l'appareil
+            Nom de l&apos;appareil
             <input
               value={nomAppareil}
               onChange={(e) => setNomAppareil(e.target.value)}
               placeholder="Mon PC, ma tablette…"
-              className="min-h-11 rounded-lg border border-neutral-300 bg-transparent px-3 dark:border-neutral-700"
+              className="champ"
             />
           </label>
         )}
@@ -150,7 +150,7 @@ export function InviteForm({
             <input
               value={nom}
               onChange={(e) => setNom(e.target.value)}
-              className="min-h-11 rounded-lg border border-neutral-300 bg-transparent px-3 dark:border-neutral-700"
+              className="champ"
             />
           </label>
         )}
@@ -158,18 +158,18 @@ export function InviteForm({
           type="button"
           onClick={creer}
           disabled={occupe || (!profilId && !avecNomAppareil && !nom.trim())}
-          className="min-h-11 rounded-lg border border-neutral-400 px-4 py-2 font-medium disabled:opacity-40"
+          className="btn btn-secondary"
         >
           {avecNomAppareil ? "Ajouter un appareil" : profilId ? `Inviter un autre appareil pour ${profilNom}` : "Créer le lien d'invitation"}
         </button>
       </div>
       {erreur && (
-        <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="text-sm font-semibold text-danger">
           {erreur}
         </p>
       )}
       {lien && (
-        <div className="space-y-2 rounded-lg bg-neutral-100 p-3 dark:bg-neutral-800">
+        <div className="info space-y-2">
           <p className="text-sm">
             Valable 7 jours, une seule utilisation. À ouvrir sur l’appareil à reconnaître :
           </p>
