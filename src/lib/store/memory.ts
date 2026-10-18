@@ -82,6 +82,10 @@ export class MemoryStore implements Store {
     return p ? { ...p } : null;
   }
 
+  async listProfiles(): Promise<Profile[]> {
+    return this.profiles.map((p) => ({ ...p }));
+  }
+
   async createInvite(profileId: string, label: string, tokenHash: string, expiresAt: string): Promise<void> {
     this.invites.push({ tokenHash, profileId, label, expiresAt, claimed: false });
   }

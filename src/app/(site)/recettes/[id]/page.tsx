@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActionButton } from "@/components/AdminActions";
 import { CopyButton } from "@/components/CopyButton";
 import { RecipeView } from "@/components/RecipeView";
 import { buildEditPrompt } from "@/lib/recipe/prompts";
@@ -44,6 +45,14 @@ export default async function PageRecette({ params }: Props) {
             >
               Modifier ici
             </Link>
+            <ActionButton
+              url={`/api/recettes/${row.id}`}
+              method="DELETE"
+              label="Supprimer"
+              style="danger"
+              confirm="Supprimer cette recette pour de bon ?"
+              then="/"
+            />
           </div>
         )}
       </footer>

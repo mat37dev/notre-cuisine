@@ -78,6 +78,14 @@ export function runStoreContract(name: string, make: () => Promise<Store>) {
         expect(await store.getProfile(ID_INCONNU)).toBeNull();
       });
 
+      test("listProfiles renvoie tous les profils", async () => {
+        const a = await store.createProfile("Mathieu", "admin");
+        const b = await store.createProfile("Camille", "member");
+        const liste = await store.listProfiles();
+        expect(liste).toHaveLength(2);
+        expect(liste).toEqual(expect.arrayContaining([a, b]));
+      });
+
       test("une invitation se réclame une seule fois", async () => {
         const p = await store.createProfile("Camille", "member");
         await store.createInvite(p.id, "Téléphone", "hash-invite", plusTard(60));

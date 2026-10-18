@@ -38,6 +38,7 @@ export interface Store {
 
   createProfile(name: string, role: Role): Promise<Profile>;
   getProfile(id: string): Promise<Profile | null>;
+  listProfiles(): Promise<Profile[]>;
 
   createInvite(profileId: string, label: string, tokenHash: string, expiresAt: string): Promise<void>;
   claimInvite(tokenHash: string, deviceTokenHash: string, nowIso: string): Promise<ClaimResult>;

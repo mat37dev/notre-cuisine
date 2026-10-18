@@ -128,6 +128,11 @@ export class SupabaseStore implements Store {
     return ok(res) as Profile | null;
   }
 
+  async listProfiles(): Promise<Profile[]> {
+    const res = await this.db.from("profiles").select("id, name, role").order("created_at");
+    return ok(res) as Profile[];
+  }
+
   async createInvite(profileId: string, label: string, tokenHash: string, expiresAt: string): Promise<void> {
     ok(
       await this.db
@@ -183,6 +188,7 @@ export class SupabaseStore implements Store {
   }
 
   async touchDevice(id: string, nowIso: string): Promise<void> {
+    if (!UUID.test(id)) return;
     ok(await this.db.from("devices").update({ last_seen_at: nowIso }).eq("id", id));
   }
 
@@ -195,6 +201,7 @@ export class SupabaseStore implements Store {
   }
 
   async revokeDevice(id: string, nowIso: string): Promise<void> {
+    if (!UUID.test(id)) return;
     ok(await this.db.from("devices").update({ revoked_at: nowIso }).eq("id", id).is("revoked_at", null));
   }
 
