@@ -21,7 +21,9 @@ export default async function PageClaude() {
         {instructions}
       </pre>
       <p className="text-sm text-neutral-500">
-        Même texte, en version brute : <a className="underline" href="/claude.txt">/claude.txt</a>
+        Même texte, en version brute : <a className="underline" href="/claude.txt">/claude.txt</a>. La documentation
+        complète que Claude peut lire lui-même est sur <a className="underline" href="/docs">/docs</a> (aussi
+        /readme et /llms.txt) : donne-lui simplement cette adresse.
       </p>
     </main>
   );
