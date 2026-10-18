@@ -9,3 +9,11 @@ export function slugify(texte: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/** Adresse lisible d'une recette, différente de toutes celles de `existants` (suffixe -2, -3…). */
+export function makeSlug(titre: string, existants: Set<string>): string {
+  const base = slugify(titre) || "recette";
+  let slug = base;
+  for (let n = 2; existants.has(slug); n++) slug = `${base}-${n}`;
+  return slug;
+}
