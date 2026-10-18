@@ -45,7 +45,7 @@ SUPABASE_SERVICE_ROLE_KEY=ta-clé-secrète
 SITE_URL=https://notre-cuisine.vercel.app
 ```
 
-Puis :
+Puis (la commande fonctionne avec Node 20 comme avec Node 22) :
 
 ```bash
 npm install
