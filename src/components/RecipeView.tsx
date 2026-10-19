@@ -37,11 +37,11 @@ export function RecipeView({ recipe }: { recipe: Recipe }) {
         </header>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
         <div className="space-y-6 lg:sticky lg:top-20">
-          <div className="carte flex items-center justify-between gap-3 p-4">
+          <div className="carte flex flex-wrap items-center justify-center gap-x-3 gap-y-2 p-4 sm:justify-between">
             <span className="font-bold">Pour</span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 className={rond}

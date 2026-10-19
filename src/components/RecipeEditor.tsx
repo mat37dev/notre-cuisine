@@ -144,11 +144,11 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
       <fieldset className="space-y-3">
         <legend className="titre text-2xl">Ingrédients</legend>
         {ingredients.map((ing) => (
-          <div key={ing.cle} className="grid grid-cols-[1fr_5rem_6.5rem_auto] items-end gap-2">
+          <div key={ing.cle} className="grid grid-cols-[5rem_1fr_auto] items-end gap-2 sm:grid-cols-[1fr_5rem_6.5rem_auto]">
             <input
               aria-label="Ingrédient"
               placeholder="Ingrédient"
-              className={champ}
+              className={`${champ} col-span-3 sm:col-span-1`}
               value={ing.nom}
               onChange={(e) => majIngredient(ing.cle, { nom: e.target.value })}
             />
@@ -216,12 +216,12 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
               value={etape.texte}
               onChange={(e) => majEtape(etape.cle, { texte: e.target.value })}
             />
-            <div className="flex items-end gap-2">
+            <div className="flex flex-wrap items-end gap-2">
               <input
                 aria-label="Chrono en secondes"
                 placeholder="Chrono (secondes)"
                 inputMode="numeric"
-                className={champ}
+                className={`${champ} min-w-40 flex-1`}
                 value={etape.chrono}
                 onChange={(e) => majEtape(etape.cle, { chrono: e.target.value.replace(/\D/g, "") })}
               />
