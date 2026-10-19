@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist_Mono, Nunito } from "next/font/google";
+import { BottomNav } from "@/components/BottomNav";
 import { RegisterSW } from "@/components/RegisterSW";
 import { SiteHeader } from "@/components/SiteHeader";
+import { getCurrentViewer } from "@/lib/session";
 import "./globals.css";
 
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
@@ -15,15 +17,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#ecdcc0",
+  viewportFit: "cover", // plein écran sur les téléphones à encoche : la barre du bas gère la zone de sécurité
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const viewer = await getCurrentViewer();
   return (
     <html lang="fr" className={`${nunito.variable} ${fraunces.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <SiteHeader />
         <div className="flex-1">{children}</div>
-        <footer className="py-6 text-center text-sm text-muted">Fait maison, avec amour 🧡</footer>
+        <footer className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 text-center text-sm text-muted sm:pb-6">Fait maison, avec amour 🧡</footer>
+        <BottomNav admin={viewer.role === "admin"} />
         <RegisterSW />
       </body>
     </html>

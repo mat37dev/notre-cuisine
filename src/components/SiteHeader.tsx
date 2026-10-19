@@ -8,42 +8,29 @@ export async function SiteHeader() {
   return (
     <header className="entete-site sticky top-0 z-20 border-b border-ligne bg-fond/85 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2">
-        <Link href="/" className="flex items-center gap-2 whitespace-nowrap">
+        <Link href="/" className="flex min-w-0 items-center gap-2 whitespace-nowrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="" width={34} height={34} className="rounded-lg" />
-          <span className="titre text-base sm:text-xl">Notre cuisine</span>
+          <img src="/icon.svg" alt="" width={34} height={34} className="shrink-0 rounded-lg" />
+          <span className="titre truncate text-lg sm:text-xl">Notre cuisine</span>
         </Link>
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          {viewer.name && (
-            <Link href="/compte" className={lien} aria-label={`Mon compte (${viewer.name})`}>
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="sm:hidden"
-              >
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
-              </svg>
-              <span aria-hidden className="hidden sm:inline">
-                {viewer.name}
-              </span>
-            </Link>
-          )}
-          {viewer.role === "admin" && (
-            <Link href="/admin" className={lien}>
-              Admin
-            </Link>
-          )}
+        <div className="flex shrink-0 items-center gap-1">
           <InstallButton variante="entete" />
-          <Link href="/ajouter" className="btn btn-primary !min-h-10 !px-3.5 whitespace-nowrap text-sm">
-            + Ajouter
-          </Link>
+          {/* Sur téléphone, ces liens sont dans la barre du bas (BottomNav) : l'en-tête reste léger. */}
+          <div className="hidden items-center gap-1 sm:flex">
+            {viewer.name && (
+              <Link href="/compte" className={lien} aria-label={`Mon compte (${viewer.name})`}>
+                {viewer.name}
+              </Link>
+            )}
+            {viewer.role === "admin" && (
+              <Link href="/admin" className={lien}>
+                Admin
+              </Link>
+            )}
+            <Link href="/ajouter" className="btn btn-primary !min-h-10 !px-3.5 whitespace-nowrap text-sm">
+              + Ajouter
+            </Link>
+          </div>
         </div>
       </nav>
     </header>
