@@ -10,7 +10,7 @@ export async function SiteHeader() {
       <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2">
         <Link href="/" className="flex min-w-0 items-center gap-2 whitespace-nowrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="" width={34} height={34} className="shrink-0 rounded-lg" />
+          <img src="/logo/notre-cuisine-symbol-small-color.svg" alt="" width={34} height={34} className="shrink-0" />
           <span className="titre truncate text-lg sm:text-xl">Notre cuisine</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1">
