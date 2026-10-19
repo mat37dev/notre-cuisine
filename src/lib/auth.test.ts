@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { claimInvite, createInviteLink, getViewer, hashToken, newToken } from "./auth";
+import { claimInvite, createAccessToken, createInviteLink, getTokenViewer, getViewer, hashToken, newToken, VISITOR } from "./auth";
 import { MemoryStore } from "./store/memory";
 
 const T = Date.parse("2026-10-18T10:00:00.000Z");
@@ -118,5 +118,61 @@ describe("getViewer", () => {
 
     await getViewer(store, r.deviceToken, () => T + 2 * 3600_000);
     expect((await store.listDevices())[0].lastSeenAt).toBe(new Date(T + 2 * 3600_000).toISOString());
+  });
+});
+
+describe("jeton d'accès pour Claude", () => {
+  test("createAccessToken : un jeton « nc_… » rendu une seule fois, seule son empreinte est gardée", async () => {
+    const p = await store.createProfile("Camille", "member");
+    const { token, device } = await createAccessToken(store, p.id, "Claude", () => T);
+    expect(token).toMatch(/^nc_[A-Za-z0-9_-]{43}$/);
+    expect(device).toMatchObject({ kind: "jeton", label: "Claude", profileId: p.id });
+    expect(JSON.stringify(await store.listDevices())).not.toContain(token);
+    expect((await store.findDevice(hashToken(token)))?.device.id).toBe(device.id);
+  });
+
+  test("getTokenViewer : le jeton d'un membre donne un membre, marqué « jeton »", async () => {
+    const p = await store.createProfile("Camille", "member");
+    const { token } = await createAccessToken(store, p.id, "Claude", () => T);
+    expect(await getTokenViewer(store, token, () => T)).toMatchObject({
+      role: "member",
+      profileId: p.id,
+      name: "Camille",
+      jeton: true,
+    });
+  });
+
+  test("getTokenViewer : le jeton d'un admin n'a PAS les droits d'admin (il publie, il ne gère pas)", async () => {
+    const admin = await store.createProfile("Mathieu", "admin");
+    const { token } = await createAccessToken(store, admin.id, "Claude", () => T);
+    expect(await getTokenViewer(store, token, () => T)).toMatchObject({ role: "member", profileId: admin.id });
+  });
+
+  test("getTokenViewer : jeton inconnu, retiré, ou cookie d'appareil présenté comme jeton : null", async () => {
+    const p = await store.createProfile("Camille", "member");
+    const { token, device } = await createAccessToken(store, p.id, "Claude", () => T);
+    expect(await getTokenViewer(store, "nc_inconnu", () => T)).toBeNull();
+
+    const lien = await createInviteLink(store, p.id, "Téléphone", "https://x.test", () => T);
+    const r = await claimInvite(store, tokenDuLien(lien), () => T);
+    if (!r.ok) throw new Error(r.erreur);
+    expect(await getTokenViewer(store, r.deviceToken, () => T)).toBeNull();
+
+    await store.revokeDevice(device.id, new Date(T).toISOString());
+    expect(await getTokenViewer(store, token, () => T)).toBeNull();
+  });
+
+  test("un jeton d'accès ne marche pas comme cookie d'appareil", async () => {
+    const p = await store.createProfile("Camille", "member");
+    const { token } = await createAccessToken(store, p.id, "Claude", () => T);
+    expect(await getViewer(store, token, () => T)).toEqual(VISITOR);
+  });
+
+  test("l'utilisation d'un jeton met à jour sa date de dernière utilisation (au plus une fois par heure)", async () => {
+    const p = await store.createProfile("Camille", "member");
+    const { token, device } = await createAccessToken(store, p.id, "Claude", () => T);
+    await getTokenViewer(store, token, () => T + 2 * 3600 * 1000);
+    const vu = (await store.listDevices()).find((d) => d.id === device.id)!.lastSeenAt;
+    expect(vu).toBe(new Date(T + 2 * 3600 * 1000).toISOString());
   });
 });

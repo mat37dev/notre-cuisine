@@ -73,22 +73,23 @@ export default async function PageAdmin() {
                   {p.name} <span className="font-normal text-muted">({p.role === "admin" ? "admin" : "membre"})</span>
                 </p>
                 {siens.length === 0 ? (
-                  <p className="text-sm text-muted">Aucun appareil reconnu.</p>
+                  <p className="text-sm text-muted">Aucun appareil ni jeton.</p>
                 ) : (
                   <ul className="space-y-2">
                     {siens.map((d) => (
                       <li key={d.id} className="flex flex-wrap items-center justify-between gap-2">
                         <span>
                           {d.label}
+                          {d.kind === "jeton" && <span className="badge ml-2">Jeton Claude</span>}
                           <span className="block text-sm text-muted">
-                            reconnu le {date(d.createdAt)}, vu le {date(d.lastSeenAt)}
+                            {d.kind === "jeton" ? "créé" : "reconnu"} le {date(d.createdAt)}, vu le {date(d.lastSeenAt)}
                           </span>
                         </span>
                         <ActionButton
                           url={`/api/admin/appareils/${d.id}/retirer`}
                           label="Retirer"
                           style="danger"
-                          confirm={`Retirer l'appareil « ${d.label} » de ${p.name} ?`}
+                          confirm={`Retirer ${d.kind === "jeton" ? "le jeton" : "l'appareil"} « ${d.label} » de ${p.name} ?`}
                         />
                       </li>
                     ))}
