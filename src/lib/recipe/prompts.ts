@@ -47,7 +47,7 @@ const FORMAT_RECETTE = `Format :
 - ingredients : une liste d'objets avec id, nom, quantite, unite. L'id est un mot court sans espace (ex. "tomates"). L'unite est g, kg, ml, l, cas (cuillère à soupe), cac (cuillère à café), pincee, piece, ou "" (rien : « 3 oignons »). La quantite est un nombre (ex. 1.5), ou absente si c'est « au goût ».
 - etapes : une liste d'objets avec titre, texte, chrono_secondes. Mets chrono_secondes seulement s'il y a un temps à chronométrer (cuisson, repos), en secondes.
 - notes : astuces (facultatif).
-- image : l'adresse https d'une image, seulement si je t'en donne une (facultatif, n'en invente jamais). Je pourrai aussi ajouter une photo directement sur le site.
+- image : l'adresse https directe d'une photo du plat (facultatif). Choisis une image toi-même si tu en trouves une qui convient (photo libre de droits, de Wikimedia Commons par exemple), et ne devine jamais une adresse que tu n'as pas vue : une adresse inventée donne une image cassée. Si tu n'en trouves pas de sûre, laisse le champ de côté. Je pourrai aussi ajouter une photo directement sur le site.
 
 Règles :
 - Des quantités rondes et faciles à diviser, de préférence en g et en ml.
@@ -135,6 +135,16 @@ Seulement si tu peux faire des requêtes web (Claude Code, un script, un outil c
 - Dans une discussion Claude normale, envoie la requête avec l'exécution de code (curl ou Python). Cela ne marche que si la personne a autorisé le domaine ${o.replace(/^https?:\/\//, "")} dans ses Paramètres → Capacités (accès réseau de l'exécution de code). Si la requête échoue avec une erreur réseau ou « bloqué », dis-le-lui et donne-lui le bloc à coller à la place.
 - Sans jeton, ne tente pas d'envoyer toi-même : donne le bloc à la personne (voir « Ajouter une recette »).
 
+## Choisir une image
+
+Le champ "image" est facultatif, mais une recette avec sa photo est plus agréable : choisis-la toi-même quand tu peux, sans attendre que la personne t'en donne une.
+
+1. Cherche sur le web une photo libre de droits qui montre vraiment le plat (Wikimedia Commons, Unsplash ou Pexels).
+2. Prends l'adresse DIRECTE du fichier image : elle commence par https:// et se termine en général par .jpg, .jpeg, .png ou .webp (sur Wikimedia Commons, c'est l'adresse « upload.wikimedia.org » du fichier, pas celle de la page qui le présente). 500 caractères au maximum.
+3. Si tu peux faire des requêtes, vérifie que l'adresse répond bien avec une image avant de l'utiliser.
+4. Ne devine jamais une adresse que tu n'as pas vue dans un résultat de recherche : une adresse inventée donne une image cassée sur le site. Si tu n'en trouves pas de sûre, laisse le champ image de côté (le site met alors une illustration à la place).
+5. Pour modifier une recette, garde l'image existante sauf si la personne veut en changer.
+
 ## Modifier une recette
 
 1. Lis la recette (adresse ci-dessus), ou demande à la personne de te coller son bloc depuis le bouton « Modifier avec Claude » de la page de la recette.
@@ -144,7 +154,7 @@ Seulement si tu peux faire des requêtes web (Claude Code, un script, un outil c
 ## À savoir
 
 - Les quantités se divisent par le nombre de personnes : préfère des g et des ml, et évite les fractions bizarres.
-- N'invente jamais l'adresse d'une image : mets le champ image seulement si la personne t'en a donné une. Elle peut aussi ajouter une photo depuis la page de modification.
+- Pour l'image, voir « Choisir une image » ci-dessus : tu peux la choisir toi-même. La personne peut aussi ajouter une photo depuis la page de modification.
 - Une même documentation est disponible sur ${o}/docs, ${o}/readme et ${o}/llms.txt.
 `;
 }
