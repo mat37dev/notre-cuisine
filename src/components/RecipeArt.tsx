@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { EMOJIS_CATEGORIES, TEINTES_CATEGORIES } from "@/lib/recipe/labels";
 import type { Categorie } from "@/lib/recipe/types";
 
 /**
  * Image d'une recette : sa photo si elle en a une, sinon un fond coloré avec l'emoji de sa catégorie.
  * Même rapport largeur/hauteur dans les deux cas : les cartes restent alignées.
+ * Si la photo ne se charge pas (adresse choisie par Claude, introuvable ou bloquée), on retombe sur l'illustration.
  */
 export function RecipeArt({
   image,
@@ -18,13 +22,16 @@ export function RecipeArt({
   className?: string;
   eager?: boolean;
 }) {
-  if (image) {
+  const [adresseEnEchec, setAdresseEnEchec] = useState<string | null>(null);
+  if (image && image !== adresseEnEchec) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={image}
         alt={titre}
         loading={eager ? "eager" : "lazy"}
+        referrerPolicy="no-referrer"
+        onError={() => setAdresseEnEchec(image)}
         className={`aspect-[16/10] w-full object-cover ${className}`}
       />
     );

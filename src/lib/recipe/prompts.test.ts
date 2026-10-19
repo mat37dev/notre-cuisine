@@ -26,6 +26,14 @@ describe("EXEMPLE_RECETTE et instructionsClaude", () => {
     for (const c of CATEGORIES) expect(texte).toContain(c);
   });
 
+  test("les instructions laissent Claude choisir une image : adresse https directe, jamais devinée", () => {
+    const texte = instructionsClaude("https://x.test");
+    expect(texte).toMatch(/choisis (toi-même )?une image/i);
+    expect(texte).toMatch(/ne devine jamais/i);
+    expect(texte).not.toMatch(/n'en invente jamais/);
+    expect(texte).not.toMatch(/seulement si je t'en donne une/);
+  });
+
   test("une origine avec barre finale ne double pas la barre", () => {
     expect(instructionsClaude("https://x.test/")).not.toContain("test//api");
   });
@@ -81,6 +89,16 @@ describe("documentationClaude", () => {
     expect(doc).toContain("Capacités");
     expect(doc).toContain("x.test");
     expect(doc).toMatch(/Erreur réseau|bloqu/i);
+  });
+
+  test("autorise Claude à choisir lui-même l'image, avec la méthode : recherche, adresse directe, vérification", () => {
+    expect(doc).toMatch(/## Choisir une image/);
+    expect(doc).toContain("Wikimedia Commons");
+    expect(doc).toMatch(/\.jpg/);
+    expect(doc).toMatch(/500 caractères/);
+    expect(doc).toMatch(/ne devine jamais/i);
+    expect(doc).toMatch(/laisse le champ image de côté/);
+    expect(doc).not.toMatch(/N'invente jamais l'adresse d'une image : mets le champ image seulement si la personne/);
   });
 
   test("explique comment changer seulement l'image d'une recette avec une adresse", () => {
