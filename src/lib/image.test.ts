@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { detectImageType, MAX_IMAGE_BYTES } from "./image";
+import { adresseImageValide, detectImageType, MAX_IMAGE_BYTES } from "./image";
 
 const octets = (...n: number[]) => new Uint8Array(n);
 const texte = (s: string) => new TextEncoder().encode(s);
@@ -32,5 +32,29 @@ describe("detectImageType (on regarde le contenu, pas ce que le navigateur annon
 
   test("taille maximale : 1,5 Mo", () => {
     expect(MAX_IMAGE_BYTES).toBe(1_500_000);
+  });
+});
+
+describe("adresseImageValide : l'adresse d'une image donnée à la main ou choisie par Claude", () => {
+  test("une adresse https est acceptée, les espaces autour sont retirés", () => {
+    expect(adresseImageValide("  https://upload.wikimedia.org/a/b/tarte.jpg ")).toBe("https://upload.wikimedia.org/a/b/tarte.jpg");
+    expect(adresseImageValide("https://exemple.fr/photo?id=3&w=800")).toBe("https://exemple.fr/photo?id=3&w=800");
+  });
+
+  test("http, javascript:, data:, ftp, texte libre, vide : refusés", () => {
+    for (const mauvais of ["http://exemple.fr/a.jpg", "javascript:alert(1)", "data:image/png;base64,AAAA", "ftp://x.fr/a.jpg", "une tarte", "", "   "]) {
+      expect(adresseImageValide(mauvais), mauvais).toBeNull();
+    }
+  });
+
+  test("une adresse avec un espace au milieu ou de plus de 500 caractères : refusée", () => {
+    expect(adresseImageValide("https://exemple.fr/ma tarte.jpg")).toBeNull();
+    expect(adresseImageValide(`https://exemple.fr/${"a".repeat(482)}`)).toBeNull();
+    expect(adresseImageValide(`https://exemple.fr/${"a".repeat(481)}`)).not.toBeNull();
+  });
+
+  test("« https:// » seul ou sans nom de site : refusé", () => {
+    expect(adresseImageValide("https://")).toBeNull();
+    expect(adresseImageValide("https:///a.jpg")).toBeNull();
   });
 });

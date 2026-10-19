@@ -1,11 +1,11 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { claimInvite, createInviteLink, DEVICE_COOKIE } from "@/lib/auth";
 import { MAX_IMAGE_BYTES } from "@/lib/image";
 import { uneRecette } from "@/lib/recipe/fixtures";
 import { setStoreForTests } from "@/lib/store";
 import { MemoryStore } from "@/lib/store/memory";
-import { DELETE, POST } from "./route";
+import { DELETE, POST, PUT } from "./route";
 
 let store: MemoryStore;
 beforeEach(() => {
@@ -137,5 +137,60 @@ describe("DELETE /api/recettes/[id]/image", () => {
   test("recette inconnue : 404", async () => {
     const admin = await personne("Mathieu", "admin");
     expect((await retirer("00000000-0000-4000-8000-000000000000", admin.cookie)).status).toBe(404);
+  });
+});
+
+const definirAdresse = (id: string, cookie: string | undefined, corps: unknown) =>
+  PUT(
+    new Request(`https://x.test/api/recettes/${id}/image`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+      body: typeof corps === "string" ? corps : JSON.stringify(corps),
+    }),
+    { params: Promise.resolve({ id }) },
+  );
+
+describe("PUT /api/recettes/[id]/image : changer la photo avec une simple adresse", () => {
+  const ADRESSE = "https://upload.wikimedia.org/wikipedia/commons/a/ab/tarte.jpg";
+
+  test("l'auteur donne une adresse https : elle devient l'image de la recette", async () => {
+    const camille = await personne("Camille", "member");
+    const row = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
+    const res = await definirAdresse(row.id, camille.cookie, { url: ADRESSE });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ image: ADRESSE });
+    expect((await store.getRecipe(row.id))?.recipe.image).toBe(ADRESSE);
+  });
+
+  test("elle remplace une photo envoyée depuis l'appareil, et le fichier stocké est supprimé", async () => {
+    const admin = await personne("Mathieu", "admin");
+    const row = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+    await envoyer(row.id, admin.cookie, jpeg());
+    const suppression = vi.spyOn(store, "deleteImage");
+    expect((await definirAdresse(row.id, admin.cookie, { url: ADRESSE })).status).toBe(200);
+    expect(suppression).toHaveBeenCalledTimes(1);
+    expect(suppression.mock.calls[0]).toEqual([row.id]);
+    expect((await store.getRecipe(row.id))?.recipe.image).toBe(ADRESSE);
+  });
+
+  test("adresse invalide (http, texte, absente) : 400, l'image existante n'est pas touchée", async () => {
+    const admin = await personne("Mathieu", "admin");
+    const row = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ image: ADRESSE }) });
+    for (const corps of [{ url: "http://exemple.fr/a.jpg" }, { url: "une tarte" }, { url: 3 }, {}, "pas du json"]) {
+      const res = await definirAdresse(row.id, admin.cookie, corps);
+      expect(res.status, JSON.stringify(corps)).toBe(400);
+      expect((await res.json()).erreur).toMatch(/https/);
+    }
+    expect((await store.getRecipe(row.id))?.recipe.image).toBe(ADRESSE);
+  });
+
+  test("un visiteur ou un autre membre : 403 ; recette inconnue : 404", async () => {
+    const camille = await personne("Camille", "member");
+    const lea = await personne("Léa", "member");
+    const row = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
+    expect((await definirAdresse(row.id, undefined, { url: ADRESSE })).status).toBe(403);
+    expect((await definirAdresse(row.id, lea.cookie, { url: ADRESSE })).status).toBe(403);
+    expect((await definirAdresse("00000000-0000-4000-8000-000000000000", camille.cookie, { url: ADRESSE })).status).toBe(404);
+    expect((await store.getRecipe(row.id))?.recipe.image).toBeUndefined();
   });
 });

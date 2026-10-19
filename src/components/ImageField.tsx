@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adresseImageValide } from "@/lib/image";
 import { redimensionner } from "@/lib/image-client";
 
-/** Photo d'une recette : choisir, remplacer ou retirer. L'image est réduite avant l'envoi. */
+/** Photo d'une recette : choisir un fichier, coller une adresse, remplacer ou retirer. Un fichier est réduit avant l'envoi. */
 export function ImageField({
   recipeId,
   titre,
@@ -20,6 +21,7 @@ export function ImageField({
   const [image, setImage] = useState(imageInitiale);
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [saisie, setSaisie] = useState("");
   const adresse = `/api/recettes/${recipeId}/image`;
 
   async function choisir(e: React.ChangeEvent<HTMLInputElement>) {
@@ -45,6 +47,35 @@ export function ImageField({
         router.refresh();
       } else {
         setErreur(data.erreur ?? "L'envoi de la photo a échoué.");
+      }
+    } catch {
+      setErreur("Impossible de joindre le site. Vérifie ta connexion et réessaie.");
+    } finally {
+      setOccupe(false);
+    }
+  }
+
+  async function utiliserAdresse() {
+    const url = adresseImageValide(saisie);
+    if (!url) {
+      setErreur("Il faut l'adresse d'une image, commençant par https:// (500 caractères au maximum).");
+      return;
+    }
+    setErreur(null);
+    setOccupe(true);
+    try {
+      const res = await fetch(adresse, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { image?: string; erreur?: string };
+      if (res.ok && data.image) {
+        setImage(data.image);
+        setSaisie("");
+        router.refresh();
+      } else {
+        setErreur(data.erreur ?? "Impossible d'utiliser cette adresse.");
       }
     } catch {
       setErreur("Impossible de joindre le site. Vérifie ta connexion et réessaie.");
@@ -95,6 +126,28 @@ export function ImageField({
           </button>
         )}
         {occupe && <span className="text-sm text-muted">Envoi en cours…</span>}
+      </div>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex min-w-0 flex-1 basis-60 flex-col text-sm">
+          Adresse d&apos;une image
+          <input
+            type="url"
+            inputMode="url"
+            placeholder="https://…"
+            className="champ"
+            value={saisie}
+            onChange={(e) => setSaisie(e.target.value)}
+            disabled={occupe}
+          />
+        </label>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={utiliserAdresse}
+          disabled={occupe || !saisie.trim()}
+        >
+          Utiliser cette adresse
+        </button>
       </div>
       {erreur && (
         <p role="alert" className="text-sm text-danger">
