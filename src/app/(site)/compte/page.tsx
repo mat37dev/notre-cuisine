@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ActionButton, InviteForm } from "@/components/AdminActions";
 import { InstallButton } from "@/components/InstallButton";
-import { TokenForm } from "@/components/TokenForm";
 import { getCurrentViewer } from "@/lib/session";
 import { getStore } from "@/lib/store";
 
@@ -26,11 +25,9 @@ export default async function PageCompte() {
     );
   }
 
-  const acces = (await getStore().listDevices()).filter(
+  const appareils = (await getStore().listDevices()).filter(
     (d) => d.profileId === viewer.profileId && d.revokedAt === null,
   );
-  const appareils = acces.filter((d) => d.kind === "appareil");
-  const jetons = acces.filter((d) => d.kind === "jeton");
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-4">
@@ -86,38 +83,6 @@ export default async function PageCompte() {
       <section className="carte space-y-3 p-4">
         <h2 className="titre text-xl">Ajouter un appareil</h2>
         <InviteForm endpoint="/api/compte/inviter" avecNomAppareil />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="titre text-xl">Jeton pour Claude</h2>
-        <p className="text-sm text-muted">
-          Un jeton est une clé secrète à donner à Claude : avec lui, Claude peut envoyer tes recettes directement et
-          elles sont publiées tout de suite, sans passer par la validation. Il ne peut rien faire d’autre (pas
-          d’administration, pas d’invitation). Tu peux le retirer à tout moment.
-        </p>
-        {jetons.length > 0 && (
-          <ul className="space-y-3">
-            {jetons.map((j) => (
-              <li key={j.id} className="carte flex flex-wrap items-center justify-between gap-3 p-4">
-                <span>
-                  <span className="font-semibold">{j.label}</span>
-                  <span className="block text-sm text-muted">
-                    créé le {date(j.createdAt)}, utilisé le {date(j.lastSeenAt)}
-                  </span>
-                </span>
-                <ActionButton
-                  url={`/api/compte/appareils/${j.id}/retirer`}
-                  label="Retirer"
-                  style="danger"
-                  confirm={`Retirer le jeton « ${j.label} » ? Claude ne pourra plus s'en servir.`}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="carte p-4">
-          <TokenForm />
-        </div>
       </section>
     </main>
   );

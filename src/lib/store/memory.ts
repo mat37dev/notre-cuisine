@@ -106,7 +106,6 @@ export class MemoryStore implements Store {
       id: crypto.randomUUID(),
       profileId: invite.profileId,
       label: invite.label,
-      kind: "appareil" as const,
       createdAt: nowIso,
       lastSeenAt: nowIso,
       revokedAt: null,
@@ -114,21 +113,6 @@ export class MemoryStore implements Store {
     };
     this.devices.push(device);
     return { status: "ok", device: this.publicDevice(device) };
-  }
-
-  async createToken(profileId: string, label: string, tokenHash: string, nowIso: string): Promise<Device> {
-    const device = {
-      id: crypto.randomUUID(),
-      profileId,
-      label,
-      kind: "jeton" as const,
-      createdAt: nowIso,
-      lastSeenAt: nowIso,
-      revokedAt: null,
-      tokenHash,
-    };
-    this.devices.push(device);
-    return this.publicDevice(device);
   }
 
   private publicDevice(d: Device & { tokenHash: string }): Device {

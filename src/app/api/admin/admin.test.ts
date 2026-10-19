@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { claimInvite, createAccessToken, createInviteLink, DEVICE_COOKIE, getViewer } from "@/lib/auth";
+import { claimInvite, createInviteLink, DEVICE_COOKIE, getViewer } from "@/lib/auth";
 import { uneRecette } from "@/lib/recipe/fixtures";
 import { setStoreForTests } from "@/lib/store";
 import { MemoryStore } from "@/lib/store/memory";
@@ -122,21 +122,6 @@ describe("exporter", () => {
     const rows = await res.json();
     expect(rows.map((r: { recipe: { titre: string } }) => r.recipe.titre).sort()).toEqual(["A", "B"]);
     expect(rows.map((r: { status: string }) => r.status).sort()).toEqual(["pending", "published"]);
-  });
-});
-
-describe("un jeton d'accès, même celui de l'admin, n'ouvre pas l'administration", () => {
-  test("valider, inviter et exporter : 403", async () => {
-    const { token } = await createAccessToken(store, admin.profil.id, "Claude");
-    const entete = { authorization: `Bearer ${token}` };
-    const row = await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette() });
-    const avec = (url: string, init: RequestInit = {}) =>
-      new Request(url, { method: "POST", ...init, headers: { ...entete, "content-type": "application/json" } });
-
-    expect((await valider(avec("https://x.test/api/admin/valider/x"), { params: Promise.resolve({ id: row.id }) })).status).toBe(403);
-    expect((await inviter(avec("https://x.test/api/admin/inviter", { body: JSON.stringify({ nom: "Léa" }) }))).status).toBe(403);
-    expect((await exporter(avec("https://x.test/api/admin/export", { method: "GET" }))).status).toBe(403);
-    expect((await store.getRecipe(row.id))?.status).toBe("pending");
   });
 });
 
