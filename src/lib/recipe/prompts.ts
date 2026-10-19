@@ -150,6 +150,7 @@ Le champ "image" est facultatif, mais une recette avec sa photo est plus agréab
 1. Lis la recette (adresse ci-dessus), ou demande à la personne de te coller son bloc depuis le bouton « Modifier avec Claude » de la page de la recette.
 2. Applique les changements demandés, puis renvoie la recette COMPLÈTE dans un seul bloc \`\`\`json, en gardant le champ "id" tel quel : c'est lui qui fait que le site met à jour la recette au lieu d'en créer une nouvelle.
 3. Si tu oublies le champ image, la photo existante est conservée.
+4. Pour ne changer QUE l'image, sans renvoyer toute la recette (avec un jeton, voir ci-dessus) : PUT ${o}/api/recettes/IDENTIFIANT/image avec le corps {"url": "https://adresse-directe-de-l-image"}. Réponse : 200 avec l'adresse retenue, ou 400 si l'adresse n'est pas une adresse https valide.
 
 ## À savoir
 

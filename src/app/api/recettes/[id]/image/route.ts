@@ -1,4 +1,4 @@
-import { detectImageType, MAX_IMAGE_BYTES } from "@/lib/image";
+import { adresseImageValide, detectImageType, MAX_IMAGE_BYTES } from "@/lib/image";
 import { json, refusJeton, viewerFromRequest } from "@/lib/http";
 import { canEdit } from "@/lib/service";
 import { getStore } from "@/lib/store";
@@ -40,6 +40,33 @@ export async function POST(request: Request, ctx: Contexte) {
   } catch {
     return json({ erreur: "Le stockage des images n'est pas prêt : il manque peut-être la migration Supabase." }, 503);
   }
+  await store.updateRecipe(row.id, { recipe: { ...row.recipe, image } });
+  return json({ image });
+}
+
+/**
+ * Change la photo d'une recette avec une simple adresse : `{"url": "https://…"}`.
+ * L'éventuelle photo envoyée depuis un appareil est alors supprimée du stockage.
+ */
+export async function PUT(request: Request, ctx: Contexte) {
+  const { id } = await ctx.params;
+  const store = getStore();
+  const viewer = await viewerFromRequest(request, store);
+  const refus = refusJeton(viewer);
+  if (refus) return refus;
+  if (viewer.role === "visitor") return json(REFUS, 403);
+
+  const row = await store.getRecipe(id);
+  if (!row) return json(INTROUVABLE, 404);
+  if (!canEdit(viewer, row)) return json(REFUS, 403);
+
+  const corps = (await request.json().catch(() => null)) as { url?: unknown } | null;
+  const image = typeof corps?.url === "string" ? adresseImageValide(corps.url) : null;
+  if (!image) {
+    return json({ erreur: "Il faut l'adresse d'une image, commençant par https:// (500 caractères au maximum)." }, 400);
+  }
+
+  await store.deleteImage(row.id).catch(() => {}); // l'ancienne photo envoyée n'a plus lieu d'être gardée
   await store.updateRecipe(row.id, { recipe: { ...row.recipe, image } });
   return json({ image });
 }

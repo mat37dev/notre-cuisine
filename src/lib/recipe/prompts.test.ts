@@ -101,6 +101,11 @@ describe("documentationClaude", () => {
     expect(doc).not.toMatch(/N'invente jamais l'adresse d'une image : mets le champ image seulement si la personne/);
   });
 
+  test("explique comment changer seulement l'image d'une recette avec une adresse", () => {
+    expect(doc).toContain("PUT https://x.test/api/recettes/IDENTIFIANT/image");
+    expect(doc).toContain('{"url"');
+  });
+
   test("explique comment ajouter et modifier une recette, et ce qu'il ne peut pas faire seul", () => {
     expect(doc).toMatch(/Ajouter une recette/);
     expect(doc).toMatch(/Modifier une recette/);

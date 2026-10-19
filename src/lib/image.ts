@@ -27,3 +27,17 @@ export function detectImageType(octets: Uint8Array): TypeImage | null {
   if (octets.length >= 12 && ascii(octets, 0, 4) === "RIFF" && ascii(octets, 8, 12) === "WEBP") return "image/webp";
   return null;
 }
+
+/** Longueur maximale de l'adresse d'une image (la même que dans le format de recette). */
+export const MAX_ADRESSE_IMAGE = 500;
+
+/** L'adresse nettoyée si c'est une adresse https d'image utilisable, sinon null. */
+export function adresseImageValide(texte: string): string | null {
+  const adresse = texte.trim();
+  if (!adresse || adresse.length > MAX_ADRESSE_IMAGE || !/^https:\/\/[^\s/]\S*$/.test(adresse)) return null;
+  try {
+    return new URL(adresse).hostname ? adresse : null;
+  } catch {
+    return null;
+  }
+}

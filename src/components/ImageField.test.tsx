@@ -78,4 +78,47 @@ describe("ImageField", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Impossible de lire cette image");
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  describe("changer l'image avec une adresse", () => {
+    const ADRESSE = "https://upload.wikimedia.org/tarte.jpg";
+
+    test("on colle l'adresse, elle est envoyée en PUT et la nouvelle image s'affiche", async () => {
+      fetchMock.mockReturnValue(reponse(200, { image: ADRESSE }));
+      const user = userEvent.setup();
+      render(<ImageField recipeId="r1" titre="Salade" resize={resize} />);
+      await user.type(screen.getByLabelText("Adresse d'une image"), `  ${ADRESSE}  `);
+      await user.click(screen.getByRole("button", { name: "Utiliser cette adresse" }));
+      await waitFor(() => expect(refresh).toHaveBeenCalled());
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/recettes/r1/image",
+        expect.objectContaining({ method: "PUT", body: JSON.stringify({ url: ADRESSE }) }),
+      );
+      expect(screen.getByRole("img", { name: "Photo de Salade" })).toHaveAttribute("src", ADRESSE);
+      expect(screen.getByLabelText("Adresse d'une image")).toHaveValue("");
+    });
+
+    test("le bouton reste inactif tant que le champ est vide", () => {
+      render(<ImageField recipeId="r1" titre="Salade" resize={resize} />);
+      expect(screen.getByRole("button", { name: "Utiliser cette adresse" })).toBeDisabled();
+    });
+
+    test("adresse qui ne commence pas par https:// : message, rien n'est envoyé", async () => {
+      const user = userEvent.setup();
+      render(<ImageField recipeId="r1" titre="Salade" resize={resize} />);
+      await user.type(screen.getByLabelText("Adresse d'une image"), "http://exemple.fr/a.jpg");
+      await user.click(screen.getByRole("button", { name: "Utiliser cette adresse" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent("https://");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    test("le site refuse (par exemple pas le droit) : son message est affiché", async () => {
+      fetchMock.mockReturnValue(reponse(403, { erreur: "Tu n'as pas le droit de modifier cette recette." }));
+      const user = userEvent.setup();
+      render(<ImageField recipeId="r1" titre="Salade" resize={resize} />);
+      await user.type(screen.getByLabelText("Adresse d'une image"), ADRESSE);
+      await user.click(screen.getByRole("button", { name: "Utiliser cette adresse" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent("Tu n'as pas le droit");
+      expect(refresh).not.toHaveBeenCalled();
+    });
+  });
 });

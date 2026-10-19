@@ -1,3 +1,4 @@
+import { adresseImageValide } from "../image";
 import { slugify } from "./slug";
 import {
   CATEGORIES,
@@ -247,7 +248,8 @@ export function parseRecipeBlock(text: string): ParseResult {
   if (notes) recipe.notes = notes;
   const image = texteOuVide(brut.image);
   if (image) {
-    if (/^https:\/\/\S+$/.test(image) && image.length <= 500) recipe.image = image;
+    const adresse = adresseImageValide(image);
+    if (adresse) recipe.image = adresse;
     else warnings.push("L'image est ignorée : il faut une adresse commençant par https:// (500 caractères au maximum).");
   }
   return { ok: true, recipe, warnings };
