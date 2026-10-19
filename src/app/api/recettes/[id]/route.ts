@@ -1,4 +1,4 @@
-import { json, originOf, refusJeton, viewerFromRequest } from "@/lib/http";
+import { json, originOf, viewerFromRequest } from "@/lib/http";
 import { removeRecipe } from "@/lib/service";
 import { getStore } from "@/lib/store";
 
@@ -14,8 +14,6 @@ export async function DELETE(request: Request, ctx: { params: Promise<{ id: stri
   const { id } = await ctx.params;
   const store = getStore();
   const viewer = await viewerFromRequest(request, store);
-  const refus = refusJeton(viewer);
-  if (refus) return refus;
   const res = await removeRecipe(store, viewer, id);
   if (res.ok) return json({ ok: true });
   return res.code === "not_found"

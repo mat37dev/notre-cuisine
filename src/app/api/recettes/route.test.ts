@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { claimInvite, createAccessToken, createInviteLink, DEVICE_COOKIE } from "@/lib/auth";
+import { claimInvite, createInviteLink, DEVICE_COOKIE } from "@/lib/auth";
 import { uneRecette } from "@/lib/recipe/fixtures";
 import { MAX_PAYLOAD_BYTES } from "@/lib/recipe/types";
 import { setStoreForTests } from "@/lib/store";
@@ -145,54 +145,5 @@ describe("POST /api/recettes", () => {
   test("visiteur qui tente une mise à jour : 403", async () => {
     const row = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
     expect((await post(fence({ ...uneRecette(), id: row.id }))).status).toBe(403);
-  });
-});
-
-describe("POST /api/recettes avec un jeton d'accès (Claude)", () => {
-  async function jetonMembre(nom = "Camille") {
-    const p = await store.createProfile(nom, "member");
-    const { token } = await createAccessToken(store, p.id, "Claude");
-    return { profil: p, entete: { authorization: `Bearer ${token}` } };
-  }
-
-  test("la recette est publiée tout de suite (201) et rattachée à son auteur, sans cookie", async () => {
-    const { profil, entete } = await jetonMembre();
-    const res = await post(fence(uneRecette({ titre: "Via Claude" })), entete);
-    expect(res.status).toBe(201);
-    const { id, status } = await res.json();
-    expect(status).toBe("published");
-    expect((await store.getRecipe(id))?.authorId).toBe(profil.id);
-  });
-
-  test("le jeton n'est pas soumis à la limite des visiteurs (6 envois d'affilée)", async () => {
-    const { entete } = await jetonMembre();
-    for (let i = 0; i < 6; i++) {
-      expect((await post(fence(uneRecette({ titre: `Recette ${i}` })), entete)).status).toBe(201);
-    }
-  });
-
-  test("jeton inconnu ou retiré : 401, rien n'est enregistré (pas une recette « en attente »)", async () => {
-    const res = await post(fence(uneRecette()), { authorization: "Bearer nc_faux" });
-    expect(res.status).toBe(401);
-    expect((await res.json()).erreur).toMatch(/jeton/i);
-    expect(await store.listRecipes()).toHaveLength(0);
-  });
-
-  test("jeton faux : 401 avant toute autre vérification, même si le corps de la requête est vide", async () => {
-    const res = await POST(
-      new Request("https://x.test/api/recettes", {
-        method: "POST",
-        headers: { authorization: "Bearer nc_faux", "content-type": "application/json" },
-        body: "{}",
-      }),
-    );
-    expect(res.status).toBe(401);
-  });
-
-  test("un jeton retiré dans « Mon compte » cesse de fonctionner", async () => {
-    const { profil, entete } = await jetonMembre();
-    const jeton = (await store.listDevices()).find((d) => d.profileId === profil.id)!;
-    await store.revokeDevice(jeton.id, new Date().toISOString());
-    expect((await post(fence(uneRecette()), entete)).status).toBe(401);
   });
 });

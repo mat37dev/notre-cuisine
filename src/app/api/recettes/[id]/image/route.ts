@@ -1,5 +1,5 @@
 import { detectImageType, MAX_IMAGE_BYTES } from "@/lib/image";
-import { json, refusJeton, viewerFromRequest } from "@/lib/http";
+import { json, viewerFromRequest } from "@/lib/http";
 import { canEdit } from "@/lib/service";
 import { getStore } from "@/lib/store";
 
@@ -13,8 +13,6 @@ export async function POST(request: Request, ctx: Contexte) {
   const { id } = await ctx.params;
   const store = getStore();
   const viewer = await viewerFromRequest(request, store);
-  const refus = refusJeton(viewer);
-  if (refus) return refus;
   if (viewer.role === "visitor") return json(REFUS, 403);
 
   const row = await store.getRecipe(id);
@@ -49,8 +47,6 @@ export async function DELETE(request: Request, ctx: Contexte) {
   const { id } = await ctx.params;
   const store = getStore();
   const viewer = await viewerFromRequest(request, store);
-  const refus = refusJeton(viewer);
-  if (refus) return refus;
   if (viewer.role === "visitor") return json(REFUS, 403);
 
   const row = await store.getRecipe(id);

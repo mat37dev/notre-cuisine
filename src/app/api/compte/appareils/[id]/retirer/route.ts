@@ -1,7 +1,7 @@
 import { requireDevice } from "@/lib/compte-api";
 import { json } from "@/lib/http";
 
-/** Retire un de SES appareils ou jetons. On peut retirer celui qu'on utilise : on est alors déconnecté. */
+/** Retire un de SES appareils. On peut retirer celui qu'on utilise : on est alors déconnecté. */
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const acces = await requireDevice(request, "Cet appareil n'est pas reconnu.");

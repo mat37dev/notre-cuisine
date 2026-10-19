@@ -16,14 +16,10 @@ export type RecipeRow = {
 
 export type Profile = { id: string; name: string; role: Role };
 
-/** « appareil » : reconnu par un cookie. « jeton » : clé d'accès à donner à Claude, envoyée dans l'en-tête Authorization. */
-export type DeviceKind = "appareil" | "jeton";
-
 export type Device = {
   id: string;
   profileId: string;
   label: string;
-  kind: DeviceKind;
   createdAt: string;
   lastSeenAt: string;
   revokedAt: string | null;
@@ -51,8 +47,6 @@ export interface Store {
   claimInvite(tokenHash: string, deviceTokenHash: string, nowIso: string): Promise<ClaimResult>;
   /** `null` si le jeton est inconnu ou si l'appareil a été retiré. */
   findDevice(tokenHash: string): Promise<{ device: Device; profile: Profile } | null>;
-  /** Enregistre un jeton d'accès (on ne reçoit que son empreinte). */
-  createToken(profileId: string, label: string, tokenHash: string, nowIso: string): Promise<Device>;
   touchDevice(id: string, nowIso: string): Promise<void>;
   listDevices(): Promise<Array<Device & { profileName: string }>>;
   revokeDevice(id: string, nowIso: string): Promise<void>;

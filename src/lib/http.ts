@@ -1,4 +1,4 @@
-import { DEVICE_COOKIE, getTokenViewer, getViewer, hashToken, VISITOR, type Viewer } from "./auth";
+import { DEVICE_COOKIE, getViewer, hashToken, type Viewer } from "./auth";
 import type { Store } from "./store/types";
 
 export function cookieValue(header: string | null, name: string): string | undefined {
@@ -17,24 +17,8 @@ export function cookieValue(header: string | null, name: string): string | undef
   return undefined;
 }
 
-/** Le jeton de « Authorization: Bearer <jeton> », ou `undefined` si l'en-tête est absent ou d'un autre type. */
-function bearerToken(header: string | null): string | undefined {
-  const m = header?.match(/^\s*bearer\s+(\S+)\s*$/i);
-  return m?.[1];
-}
-
-/** Qui appelle : un jeton d'accès (Claude) s'il y en a un, sinon l'appareil reconnu par son cookie, sinon un visiteur. */
-export async function viewerFromRequest(request: Request, store: Store): Promise<Viewer> {
-  const jeton = bearerToken(request.headers.get("authorization"));
-  if (jeton) return (await getTokenViewer(store, jeton)) ?? { ...VISITOR, jetonInvalide: true };
+export function viewerFromRequest(request: Request, store: Store): Promise<Viewer> {
   return getViewer(store, cookieValue(request.headers.get("cookie"), DEVICE_COOKIE));
-}
-
-/** Un jeton inconnu ou retiré ne doit pas se faire passer pour un simple visiteur : on répond 401, clairement. */
-export function refusJeton(viewer: Viewer): Response | null {
-  return viewer.jetonInvalide
-    ? json({ erreur: "Ce jeton est inconnu ou a été retiré. Demande-en un nouveau dans « Mon compte »." }, 401)
-    : null;
 }
 
 /** Adresse IP de l'appelant, hachée avec un sel : on ne garde jamais l'adresse elle-même. */

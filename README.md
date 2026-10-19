@@ -11,7 +11,6 @@ Petit site de recettes en commun, pensé pour le téléphone (appli installable 
 - Trois niveaux d'accès : admin (valide, modifie, supprime, invite), membre reconnue (publie tout de suite), visiteur (en attente de validation).
 - Claude peut chercher et lire les recettes : `/api/recettes`. Sa documentation complète est sur `/docs` (aussi `/readme` et `/llms.txt`) ; la page `/claude` donne les instructions à coller.
 - Chaque personne gère ses appareils sur `/compte`, où se trouve aussi le bouton « Installer l'appli » (il apparaît aussi en haut du site quand le navigateur propose l'installation).
-- Sur `/compte`, on peut aussi créer un **jeton pour Claude** (clé secrète `nc_…`, affichée une seule fois, 5 au maximum, retirable). Envoyé en `Authorization: Bearer`, il permet à Claude de publier des recettes directement (`POST /api/recettes`) avec les droits d'un membre, jamais ceux d'un admin. Il ne peut créer ni appareil, ni autre jeton.
 - `robots.txt` laisse lire le site (pour que Claude puisse le consulter) sauf `/admin` et `/invite/` ; les moteurs de recherche restent écartés par l'en-tête `noindex`.
 - Liste des recettes avec recherche en direct, catégories et tri, animés (les cartes glissent, avec respect du réglage « réduire les animations »).
 

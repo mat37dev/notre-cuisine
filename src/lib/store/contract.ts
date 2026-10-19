@@ -138,28 +138,6 @@ export function runStoreContract(name: string, make: () => Promise<Store>) {
         expect(await store.findDevice("hash-appareil")).toBeNull();
       });
 
-      test("un appareil reconnu par invitation est de genre « appareil »", async () => {
-        const p = await store.createProfile("Camille", "member");
-        await store.createInvite(p.id, "Téléphone", "hash-invite", plusTard(60));
-        const claim = await store.claimInvite("hash-invite", "hash-appareil", T0);
-        if (claim.status !== "ok") throw new Error("invitation non réclamée");
-        expect(claim.device.kind).toBe("appareil");
-      });
-
-      test("createToken crée un jeton d'accès (genre « jeton ») retrouvable par son empreinte, puis null une fois retiré", async () => {
-        const p = await store.createProfile("Camille", "member");
-        const jeton = await store.createToken(p.id, "Claude", "hash-jeton", T0);
-        expect(jeton).toMatchObject({ profileId: p.id, label: "Claude", kind: "jeton", revokedAt: null });
-
-        const trouve = await store.findDevice("hash-jeton");
-        expect(trouve?.device).toMatchObject({ id: jeton.id, kind: "jeton" });
-        expect(trouve?.profile).toEqual({ id: p.id, name: "Camille", role: "member" });
-
-        expect((await store.listDevices()).find((d) => d.id === jeton.id)?.kind).toBe("jeton");
-        await store.revokeDevice(jeton.id, plusTard(10));
-        expect(await store.findDevice("hash-jeton")).toBeNull();
-      });
-
       test("listDevices donne le nom du profil et la date de retrait", async () => {
         const p = await store.createProfile("Camille", "member");
         await store.createInvite(p.id, "Téléphone", "hash-invite", plusTard(60));
