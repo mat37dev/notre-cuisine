@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#a3400e"/>
-  <g fill="#fff">
-    <rect x="120" y="214" width="272" height="30" rx="15"/>
-    <circle cx="256" cy="196" r="20"/>
-    <path d="M136 252h240v84a72 72 0 0 1-72 72H208a72 72 0 0 1-72-72z"/>
-    <rect x="88" y="268" width="48" height="24" rx="12"/>
-    <rect x="376" y="268" width="48" height="24" rx="12"/>
-  </g>
-  <g fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round">
-    <path d="M206 160c-14-20 14-30 0-52"/>
-    <path d="M256 146c-14-20 14-30 0-52"/>
-    <path d="M306 160c-14-20 14-30 0-52"/>
-  </g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t"><title id="t">Notre cuisine (petite taille)</title><g id="symbol"><path fill="#7f330b" d="M54 22 H76 V226 H54 A22 22 0 0 1 32 204 V44 A22 22 0 0 1 54 22 Z"/><path fill="#a3400e" fill-rule="evenodd" d="M88 22 H198 A26 26 0 0 1 224 48 V200 A26 26 0 0 1 198 226 H88 Z M112 96 A44 16 0 0 1 200 96 Z M112 106 H200 V144 A32 32 0 0 1 168 176 H144 A32 32 0 0 1 112 144 Z"/></g></svg>
