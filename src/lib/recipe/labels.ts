@@ -7,6 +7,7 @@ export const LIBELLES_CATEGORIES: Record<Categorie, string> = {
   dessert: "Dessert",
   gouter: "Goûter",
   sauce: "Sauce",
+  cocktail: "Cocktail",
   autre: "Autre",
 };
 
@@ -17,6 +18,7 @@ export const EMOJIS_CATEGORIES: Record<Categorie, string> = {
   dessert: "🍰",
   gouter: "🍪",
   sauce: "🫙",
+  cocktail: "🍸",
   autre: "🍽️",
 };
 
@@ -28,5 +30,6 @@ export const TEINTES_CATEGORIES: Record<Categorie, string> = {
   dessert: "340",
   gouter: "32",
   sauce: "8",
+  cocktail: "280",
   autre: "55",
 };

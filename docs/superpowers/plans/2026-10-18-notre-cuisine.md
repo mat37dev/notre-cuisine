@@ -20,7 +20,7 @@
 - Envoi d'un visiteur limité à 5 par heure et par adresse IP (hachée), charge utile limitée à 100 000 octets.
 - Quantités toujours lisibles : jamais de fraction étrange, jamais `NaN` ni `0`.
 - Unités canoniques : `g`, `kg`, `ml`, `l`, `cas` (cuillère à soupe), `cac` (cuillère à café), `pincee`, `piece`, `""` (aucune).
-- Catégories : `entree`, `salade`, `plat`, `dessert`, `gouter`, `sauce`, `autre`.
+- Catégories : `entree`, `salade`, `plat`, `dessert`, `gouter`, `sauce`, `cocktail`, `autre`.
 - Référence d'ingrédient dans une étape : `{{id}}` est remplacé par la **quantité seulement** (ex. « 40 g »). L'auteur écrit « {{pignons}} de pignons de pin ».
 - Les champs du JSON de recette sont en français : `titre`, `description`, `portions`, `categorie`, `tags`, `ingredients[{id, nom, quantite, unite}]`, `etapes[{titre, texte, chrono_secondes}]`, `notes`, `id` (mise à jour seulement).
 
