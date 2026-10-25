@@ -1,7 +1,7 @@
 export const UNITES = ["g", "kg", "ml", "l", "cas", "cac", "pincee", "piece", ""] as const;
 export type Unite = (typeof UNITES)[number];
 
-export const CATEGORIES = ["entree", "salade", "plat", "dessert", "gouter", "sauce", "autre"] as const;
+export const CATEGORIES = ["entree", "salade", "plat", "dessert", "gouter", "sauce", "cocktail", "autre"] as const;
 export type Categorie = (typeof CATEGORIES)[number];
 
 export const MAX_INGREDIENTS = 100;
