@@ -20,7 +20,8 @@ export function canView(viewer: Viewer, row: RecipeRow): boolean {
 
 export function canEdit(viewer: Viewer, row: RecipeRow): boolean {
   if (viewer.role === "admin") return true;
-  return viewer.role === "member" && viewer.profileId !== null && row.authorId === viewer.profileId;
+  // Tout membre connecté peut modifier n'importe quelle recette, même si elle n'est pas la sienne.
+  return viewer.role === "member" && viewer.profileId !== null;
 }
 
 /** Ajoute une recette, ou met à jour celle dont `recipe.id` est renseigné. */
