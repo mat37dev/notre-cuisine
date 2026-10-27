@@ -7,6 +7,7 @@ export type Categorie = (typeof CATEGORIES)[number];
 export const MAX_INGREDIENTS = 100;
 export const MAX_ETAPES = 60;
 export const MAX_PAYLOAD_BYTES = 100_000;
+export const MAX_NOM_VARIANTE = 40;
 
 export type Ingredient = {
   id: string;
@@ -33,4 +34,11 @@ export type Recipe = {
   ingredients: Ingredient[];
   etapes: Etape[];
   notes?: string;
+  /**
+   * À l'envoi seulement : slug ou id d'une recette du même plat, pour ajouter cette recette comme variante.
+   * `null` détache la recette de son plat. Jamais stocké dans la recette : la base garde le lien à part.
+   */
+  variante_de?: string | null;
+  /** Nom court de la variante, affiché dans sa pastille (« Végétarienne »). `null` le retire. */
+  nom_variante?: string | null;
 };
