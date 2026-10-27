@@ -10,9 +10,11 @@ type Invite = {
   claimed: boolean;
 };
 
+/** Copie à stocker : sans `id` ni `variante_de` (le lien de variante est gardé à part, dans `varianteDe`). */
 const sansId = (r: Recipe): Recipe => {
   const copie = structuredClone(r);
   delete copie.id;
+  delete copie.variante_de;
   return copie;
 };
 
@@ -28,7 +30,12 @@ export class MemoryStore implements Store {
     return { ...row, recipe: { ...structuredClone(row.recipe), id: row.id } };
   }
 
-  async insertRecipe(input: { status: Status; authorId: string | null; recipe: Recipe }): Promise<RecipeRow> {
+  async insertRecipe(input: {
+    status: Status;
+    authorId: string | null;
+    recipe: Recipe;
+    varianteDe?: string | null;
+  }): Promise<RecipeRow> {
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
     const row: RecipeRow = {
@@ -38,17 +45,22 @@ export class MemoryStore implements Store {
       authorId: input.authorId,
       createdAt: now,
       updatedAt: now,
+      varianteDe: input.varianteDe ?? null,
       recipe: sansId(input.recipe),
     };
     this.recipes.push(row);
     return this.vue(row);
   }
 
-  async updateRecipe(id: string, patch: { status?: Status; recipe?: Recipe }): Promise<RecipeRow | null> {
+  async updateRecipe(
+    id: string,
+    patch: { status?: Status; recipe?: Recipe; varianteDe?: string | null },
+  ): Promise<RecipeRow | null> {
     const row = this.recipes.find((r) => r.id === id);
     if (!row) return null;
     if (patch.status) row.status = patch.status;
     if (patch.recipe) row.recipe = sansId(patch.recipe);
+    if (patch.varianteDe !== undefined) row.varianteDe = patch.varianteDe;
     row.updatedAt = new Date().toISOString();
     return this.vue(row);
   }
@@ -68,6 +80,8 @@ export class MemoryStore implements Store {
   async deleteRecipe(id: string): Promise<boolean> {
     const avant = this.recipes.length;
     this.recipes = this.recipes.filter((r) => r.id !== id);
+    // comme « on delete set null » en base
+    for (const r of this.recipes) if (r.varianteDe === id) r.varianteDe = null;
     return this.recipes.length < avant;
   }
 

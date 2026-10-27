@@ -8,6 +8,7 @@ type DbRecipe = {
   slug: string;
   status: Status;
   author_id: string | null;
+  variante_de: string | null;
   data: Recipe;
   created_at: string;
   updated_at: string;
@@ -37,6 +38,7 @@ const toRow = (r: DbRecipe): RecipeRow => ({
   slug: r.slug,
   status: r.status,
   authorId: r.author_id,
+  varianteDe: r.variante_de ?? null,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   recipe: { ...r.data, id: r.id },
@@ -52,9 +54,11 @@ const toDevice = (d: DbDevice): Device => ({
   revokedAt: d.revoked_at,
 });
 
+/** Copie à stocker : sans `id` ni `variante_de` (le lien de variante est gardé dans la colonne `variante_de`). */
 function sansId(r: Recipe): Recipe {
   const copie = { ...r };
   delete copie.id;
+  delete copie.variante_de;
   return copie;
 }
 
@@ -66,13 +70,24 @@ export class SupabaseStore implements Store {
     this.db = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   }
 
-  async insertRecipe(input: { status: Status; authorId: string | null; recipe: Recipe }): Promise<RecipeRow> {
+  async insertRecipe(input: {
+    status: Status;
+    authorId: string | null;
+    recipe: Recipe;
+    varianteDe?: string | null;
+  }): Promise<RecipeRow> {
     const base = (await this.slugsExistants(input.recipe.titre)) ?? new Set<string>();
     for (let essai = 0; essai < 5; essai++) {
       const slug = makeSlug(input.recipe.titre, base);
       const res = await this.db
         .from("recipes")
-        .insert({ slug, status: input.status, author_id: input.authorId, data: sansId(input.recipe) })
+        .insert({
+          slug,
+          status: input.status,
+          author_id: input.authorId,
+          variante_de: input.varianteDe ?? null,
+          data: sansId(input.recipe),
+        })
         .select()
         .single();
       if (res.error?.code === "23505") {
@@ -90,11 +105,15 @@ export class SupabaseStore implements Store {
     return new Set((ok(res) as Array<{ slug: string }>).map((r) => r.slug));
   }
 
-  async updateRecipe(id: string, patch: { status?: Status; recipe?: Recipe }): Promise<RecipeRow | null> {
+  async updateRecipe(
+    id: string,
+    patch: { status?: Status; recipe?: Recipe; varianteDe?: string | null },
+  ): Promise<RecipeRow | null> {
     if (!UUID.test(id)) return null;
     const maj: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (patch.status) maj.status = patch.status;
     if (patch.recipe) maj.data = sansId(patch.recipe);
+    if (patch.varianteDe !== undefined) maj.variante_de = patch.varianteDe;
     const res = await this.db.from("recipes").update(maj).eq("id", id).select().maybeSingle();
     const row = ok(res) as DbRecipe | null;
     return row ? toRow(row) : null;

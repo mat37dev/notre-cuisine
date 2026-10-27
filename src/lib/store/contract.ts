@@ -38,6 +38,35 @@ export function runStoreContract(name: string, make: () => Promise<Store>) {
         expect(b.slug).toBe("salade-burrata-2");
       });
 
+      test("une recette est indépendante par défaut ; insertRecipe enregistre varianteDe", async () => {
+        const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+        expect(a.varianteDe).toBeNull();
+        const b = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette(), varianteDe: a.id });
+        expect(b.varianteDe).toBe(a.id);
+        expect((await store.getRecipe(b.slug))?.varianteDe).toBe(a.id);
+        expect((await store.listRecipes()).find((r) => r.id === b.id)?.varianteDe).toBe(a.id);
+      });
+
+      test("updateRecipe change varianteDe seulement s'il est donné", async () => {
+        const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+        const b = await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette(), varianteDe: a.id });
+        expect((await store.updateRecipe(b.id, { status: "published" }))?.varianteDe).toBe(a.id);
+        expect((await store.updateRecipe(b.id, { varianteDe: null }))?.varianteDe).toBeNull();
+        expect((await store.getRecipe(b.id))?.varianteDe).toBeNull();
+      });
+
+      test("variante_de n'est jamais stocké dans la recette, nom_variante l'est", async () => {
+        const row = await store.insertRecipe({
+          status: "published",
+          authorId: null,
+          recipe: uneRecette({ variante_de: "x", nom_variante: "Végé" }),
+        });
+        expect("variante_de" in row.recipe).toBe(false);
+        expect(row.recipe.nom_variante).toBe("Végé");
+        const maj = await store.updateRecipe(row.id, { recipe: uneRecette({ variante_de: "y" }) });
+        expect("variante_de" in maj!.recipe).toBe(false);
+      });
+
       test("listRecipes filtre par statut", async () => {
         await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre: "A" }) });
         await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette({ titre: "B" }) });
