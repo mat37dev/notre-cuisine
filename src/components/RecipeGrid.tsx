@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 import { EMOJIS_CATEGORIES, LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
-import { searchRecipes } from "@/lib/recipe/search";
+import { platsAffiches } from "@/lib/recipe/plats";
 import { CATEGORIES } from "@/lib/recipe/types";
 import type { RecipeRow } from "@/lib/store/types";
-import { RecipeArt } from "./RecipeArt";
+import { PlatCard } from "./PlatCard";
 
 type Tri = "recentes" | "az";
 
@@ -55,10 +55,11 @@ export function RecipeGrid({
   const [tri, setTri] = useState<Tri>("recentes");
 
   const visibles = useMemo(() => {
-    const trouvees = searchRecipes(rows, q, categorie);
+    // une carte par plat : ses variantes sont présentées avec elle
+    const plats = platsAffiches(rows, q, categorie);
     return tri === "az"
-      ? [...trouvees].sort((a, b) => a.recipe.titre.localeCompare(b.recipe.titre, "fr", { sensitivity: "base" }))
-      : trouvees;
+      ? [...plats].sort((a, b) => a.carte.recipe.titre.localeCompare(b.carte.recipe.titre, "fr", { sensitivity: "base" }))
+      : plats;
   }, [rows, q, categorie, tri]);
 
   const choisirCategorie = (c?: string) =>
@@ -150,37 +151,8 @@ export function RecipeGrid({
         </div>
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visibles.map((row, i) => (
-            <li
-              key={row.id}
-              className="carte-liste"
-              style={{ viewTransitionName: `carte-${row.id}`, "--i": Math.min(i, 12) } as CSSProperties}
-            >
-              <Link
-                href={`/recettes/${row.slug}`}
-                className="carte group block h-full overflow-hidden transition hover:-translate-y-0.5 hover:border-brand"
-              >
-                <RecipeArt
-                  image={row.recipe.image}
-                  titre={row.recipe.titre}
-                  categorie={row.recipe.categorie}
-                  className="transition duration-300 group-hover:scale-[1.03]"
-                />
-                <div className="space-y-1.5 p-4">
-                  <span className="badge">
-                    <span aria-hidden>{EMOJIS_CATEGORIES[row.recipe.categorie]}</span>
-                    {LIBELLES_CATEGORIES[row.recipe.categorie]}
-                  </span>
-                  <h2 className="titre text-xl">{row.recipe.titre}</h2>
-                  {row.recipe.description && (
-                    <p className="line-clamp-2 text-sm text-muted">{row.recipe.description}</p>
-                  )}
-                  <p className="text-sm font-semibold text-herbe">
-                    Pour {row.recipe.portions} {row.recipe.portions > 1 ? "personnes" : "personne"}
-                  </p>
-                </div>
-              </Link>
-            </li>
+          {visibles.map((plat, i) => (
+            <PlatCard key={plat.carte.id} plat={plat} index={i} />
           ))}
         </ul>
       )}
