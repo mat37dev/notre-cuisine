@@ -57,6 +57,25 @@ describe("GET /api/recettes", () => {
     const parCat = await (await getList(new Request("https://x.test/api/recettes?categorie=dessert"))).json();
     expect(parCat.map((r: { titre: string }) => r.titre)).toEqual(["Flan"]);
   });
+
+  test("une entrée par recette ; une variante donne son nom et le slug de sa référence", async () => {
+    const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre: "Lasagnes" }) });
+    await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Lasagnes végé", nom_variante: "Végétarienne" }),
+      varianteDe: a.id,
+    });
+    const liste = await (await getList(new Request("https://x.test/api/recettes"))).json();
+    expect(liste).toHaveLength(2);
+    expect(liste.find((r: { slug: string }) => r.slug === "lasagnes-vege")).toMatchObject({
+      nom_variante: "Végétarienne",
+      variante_de: "lasagnes",
+    });
+    const reference = liste.find((r: { slug: string }) => r.slug === "lasagnes");
+    expect("variante_de" in reference).toBe(false);
+    expect("nom_variante" in reference).toBe(false);
+  });
 });
 
 describe("GET /api/recettes/[id]", () => {
@@ -77,6 +96,31 @@ describe("GET /api/recettes/[id]", () => {
     await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette() });
     expect((await appeler("salade-burrata")).status).toBe(404);
     expect((await appeler("inconnue")).status).toBe(404);
+  });
+
+  test("donne les autres versions du plat ; une variante donne aussi variante_de", async () => {
+    const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre: "Lasagnes" }) });
+    const b = await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Lasagnes végé", nom_variante: "Végétarienne" }),
+      varianteDe: a.id,
+    });
+    await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette({ titre: "Cachée" }), varianteDe: a.id });
+
+    const ja = await (await appeler("lasagnes")).json();
+    expect("variante_de" in ja).toBe(false);
+    expect(ja.variantes).toEqual([
+      { id: b.id, slug: "lasagnes-vege", titre: "Lasagnes végé", nom_variante: "Végétarienne", lien: "https://x.test/recettes/lasagnes-vege" },
+    ]);
+    const jb = await (await appeler("lasagnes-vege")).json();
+    expect(jb.variante_de).toBe("lasagnes");
+    expect(jb.variantes).toEqual([{ id: a.id, slug: "lasagnes", titre: "Lasagnes", lien: "https://x.test/recettes/lasagnes" }]);
+  });
+
+  test("une recette seule a une liste de variantes vide", async () => {
+    await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+    expect((await (await appeler("salade-burrata")).json()).variantes).toEqual([]);
   });
 });
 

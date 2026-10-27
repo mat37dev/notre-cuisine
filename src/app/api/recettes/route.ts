@@ -6,15 +6,25 @@ import { getStore } from "@/lib/store";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const rows = await listPublished(getStore(), searchParams.get("q") ?? "", searchParams.get("categorie") ?? undefined);
+  const store = getStore();
+  const [rows, toutes] = await Promise.all([
+    listPublished(store, searchParams.get("q") ?? "", searchParams.get("categorie") ?? undefined),
+    listPublished(store),
+  ]);
+  const slugs = new Map(toutes.map((r) => [r.id, r.slug]));
   return json(
-    rows.map((r) => ({
-      id: r.id,
-      slug: r.slug,
-      titre: r.recipe.titre,
-      description: r.recipe.description ?? "",
-      categorie: r.recipe.categorie,
-    })),
+    rows.map((r) => {
+      const reference = r.varianteDe ? slugs.get(r.varianteDe) : undefined;
+      return {
+        id: r.id,
+        slug: r.slug,
+        titre: r.recipe.titre,
+        description: r.recipe.description ?? "",
+        categorie: r.recipe.categorie,
+        ...(r.recipe.nom_variante && { nom_variante: r.recipe.nom_variante }),
+        ...(reference && { variante_de: reference }),
+      };
+    }),
   );
 }
 

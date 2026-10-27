@@ -1,12 +1,32 @@
+import { VISITOR } from "@/lib/auth";
 import { json, originOf, refusJeton, viewerFromRequest } from "@/lib/http";
-import { removeRecipe } from "@/lib/service";
+import { listerGroupe, removeRecipe } from "@/lib/service";
 import { getStore } from "@/lib/store";
 
 export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const row = await getStore().getRecipe(id);
+  const store = getStore();
+  const row = await store.getRecipe(id);
   if (!row || row.status !== "published") return json({ erreur: "Recette introuvable." }, 404);
-  return json({ ...row.recipe, id: row.id, slug: row.slug, lien: `${originOf(request)}/recettes/${row.slug}` });
+  const origine = originOf(request);
+  const groupe = await listerGroupe(store, VISITOR, row);
+  const reference = row.varianteDe ? groupe.find((r) => r.id === row.varianteDe) : undefined;
+  return json({
+    ...row.recipe,
+    id: row.id,
+    slug: row.slug,
+    lien: `${origine}/recettes/${row.slug}`,
+    ...(reference && { variante_de: reference.slug }),
+    variantes: groupe
+      .filter((r) => r.id !== row.id)
+      .map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        titre: r.recipe.titre,
+        ...(r.recipe.nom_variante && { nom_variante: r.recipe.nom_variante }),
+        lien: `${origine}/recettes/${r.slug}`,
+      })),
+  });
 }
 
 /** Supprime une recette : son auteur (membre) ou l'admin. */
