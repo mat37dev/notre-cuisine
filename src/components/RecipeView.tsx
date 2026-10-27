@@ -11,7 +11,8 @@ const MIN_PERSONNES = 1;
 const MAX_PERSONNES = 50;
 const borner = (n: number) => Math.min(MAX_PERSONNES, Math.max(MIN_PERSONNES, Math.round(n)));
 
-export function RecipeView({ recipe }: { recipe: Recipe }) {
+/** `entete` : contenu ajouté au bas de la carte du titre (les pastilles des versions du plat). */
+export function RecipeView({ recipe, entete }: { recipe: Recipe; entete?: React.ReactNode }) {
   const [personnes, setPersonnes] = useState(() => borner(recipe.portions));
   const rond =
     "flex size-12 items-center justify-center rounded-full border border-ligne bg-papier text-2xl font-bold " +
@@ -35,6 +36,7 @@ export function RecipeView({ recipe }: { recipe: Recipe }) {
           <h1 className="titre text-3xl sm:text-4xl">{recipe.titre}</h1>
           {recipe.description && <p className="text-lg text-muted">{recipe.description}</p>}
         </header>
+        {entete}
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">

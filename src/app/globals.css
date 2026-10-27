@@ -86,6 +86,16 @@ body {
   .btn-danger {
     @apply border border-danger text-danger hover:bg-danger-doux;
   }
+  /* « Proposer une variante » : vert « herbe », en pointillés, pour dire « ajouter à côté » */
+  .btn-variante,
+  .puce-plus {
+    @apply border-2 border-dashed border-herbe text-herbe;
+    background-color: color-mix(in srgb, var(--herbe) 10%, var(--papier));
+  }
+  .btn-variante:hover,
+  .puce-plus:hover {
+    background-color: color-mix(in srgb, var(--herbe) 18%, var(--papier));
+  }
 
   .champ {
     @apply min-h-11 w-full rounded-xl border border-ligne bg-papier px-3 py-2 text-encre placeholder:text-muted;
