@@ -50,16 +50,26 @@ export function AddRecipeForm({ initialText = "" }: { initialText?: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ texte }),
       });
-      const data = (await res.json().catch(() => ({}))) as { status?: string; lien?: string; errors?: string[] };
+      const data = (await res.json().catch(() => ({}))) as {
+        status?: string;
+        lien?: string;
+        errors?: string[];
+        variante_de?: { slug: string; titre: string };
+      };
       if (res.ok) {
         const publiee = data.status === "published";
+        const variante = res.status !== 200 && data.variante_de; // une nouvelle variante, pas une mise à jour
         setResultat({
           type: "ok",
-          message: publiee
-            ? res.status === 200
-              ? "Recette mise à jour !"
-              : "Recette publiée !"
-            : "Recette envoyée : elle est en attente de validation.",
+          message: variante
+            ? publiee
+              ? `Variante ajoutée à « ${variante.titre} » !`
+              : "Variante envoyée : elle est en attente de validation."
+            : publiee
+              ? res.status === 200
+                ? "Recette mise à jour !"
+                : "Recette publiée !"
+              : "Recette envoyée : elle est en attente de validation.",
           lien: publiee && data.lien ? data.lien : null,
         });
       } else {

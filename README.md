@@ -8,6 +8,7 @@ Petit site de recettes en commun, pensé pour le téléphone (appli installable 
 
 - Recettes avec choix du nombre de personnes (quantités recalculées et lisibles), chronos et photo de présentation.
 - Ajout depuis Claude : un bloc au format fixe, à copier ou à partager vers l'appli.
+- Variantes : plusieurs recettes d'un même plat (`variante_de` et `nom_variante` dans le bloc), regroupées sur une seule carte de l'accueil et reliées par des pastilles sur la page de la recette.
 - Trois niveaux d'accès : admin (valide, modifie, supprime, invite), membre reconnue (publie tout de suite), visiteur (en attente de validation).
 - Claude peut chercher et lire les recettes : `/api/recettes`. Sa documentation complète est sur `/docs` (aussi `/readme` et `/llms.txt`) ; la page `/claude` donne les instructions à coller.
 - Chaque personne gère ses appareils sur `/compte`, où se trouve aussi le bouton « Installer l'appli » (il apparaît aussi en haut du site quand le navigateur propose l'installation).

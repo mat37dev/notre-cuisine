@@ -4,7 +4,23 @@ import { useState } from "react";
 
 type Etat = "repos" | "copie" | "echec";
 
-export function CopyButton({ text, label, className = "" }: { text: string; label: string; className?: string }) {
+/**
+ * `base` remplace les classes du bouton principal (ex. "btn btn-variante").
+ * `ariaLabel` nomme le bouton au repos quand son texte n'est qu'un symbole (« ＋ »).
+ */
+export function CopyButton({
+  text,
+  label,
+  className = "",
+  base = "btn btn-primary",
+  ariaLabel,
+}: {
+  text: string;
+  label: string;
+  className?: string;
+  base?: string;
+  ariaLabel?: string;
+}) {
   const [etat, setEtat] = useState<Etat>("repos");
 
   async function copier() {
@@ -22,7 +38,8 @@ export function CopyButton({ text, label, className = "" }: { text: string; labe
     <button
       type="button"
       onClick={copier}
-      className={`btn btn-primary ${className}`}
+      aria-label={etat === "repos" ? ariaLabel : undefined}
+      className={`${base} ${className}`}
     >
       {texte}
     </button>

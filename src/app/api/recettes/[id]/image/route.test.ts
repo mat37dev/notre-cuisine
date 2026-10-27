@@ -68,13 +68,14 @@ describe("POST /api/recettes/[id]/image", () => {
     expect((await envoyer(row.id, admin.cookie, jpeg())).status).toBe(200);
   });
 
-  test("un visiteur ou un autre membre : 403 et rien n'est enregistré", async () => {
+  test("un visiteur : 403 et rien n'est enregistré ; un autre membre connecté peut envoyer la photo", async () => {
     const camille = await personne("Camille", "member");
     const lea = await personne("Léa", "member");
     const row = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
     expect((await envoyer(row.id, undefined, jpeg())).status).toBe(403);
-    expect((await envoyer(row.id, lea.cookie, jpeg())).status).toBe(403);
     expect((await store.getRecipe(row.id))?.recipe.image).toBeUndefined();
+    expect((await envoyer(row.id, lea.cookie, jpeg())).status).toBe(200);
+    expect((await store.getRecipe(row.id))?.recipe.image).toEqual(expect.any(String));
   });
 
   test("recette inconnue : 404 ; pas de fichier : 400", async () => {
@@ -121,7 +122,7 @@ describe("DELETE /api/recettes/[id]/image", () => {
     expect((await store.getRecipe(row.id))?.recipe.image).toBeUndefined();
   });
 
-  test("visiteur ou autre membre : 403, la photo reste", async () => {
+  test("visiteur : 403, la photo reste ; un autre membre connecté peut la retirer", async () => {
     const camille = await personne("Camille", "member");
     const lea = await personne("Léa", "member");
     const row = await store.insertRecipe({
@@ -130,8 +131,9 @@ describe("DELETE /api/recettes/[id]/image", () => {
       recipe: uneRecette({ image: "https://exemple.test/a.jpg" }),
     });
     expect((await retirer(row.id)).status).toBe(403);
-    expect((await retirer(row.id, lea.cookie)).status).toBe(403);
     expect((await store.getRecipe(row.id))?.recipe.image).toBe("https://exemple.test/a.jpg");
+    expect((await retirer(row.id, lea.cookie)).status).toBe(200);
+    expect((await store.getRecipe(row.id))?.recipe.image).toBeUndefined();
   });
 
   test("recette inconnue : 404", async () => {
@@ -184,13 +186,14 @@ describe("PUT /api/recettes/[id]/image : changer la photo avec une simple adress
     expect((await store.getRecipe(row.id))?.recipe.image).toBe(ADRESSE);
   });
 
-  test("un visiteur ou un autre membre : 403 ; recette inconnue : 404", async () => {
+  test("un visiteur : 403 ; recette inconnue : 404 ; un autre membre connecté peut changer l'adresse", async () => {
     const camille = await personne("Camille", "member");
     const lea = await personne("Léa", "member");
     const row = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
     expect((await definirAdresse(row.id, undefined, { url: ADRESSE })).status).toBe(403);
-    expect((await definirAdresse(row.id, lea.cookie, { url: ADRESSE })).status).toBe(403);
     expect((await definirAdresse("00000000-0000-4000-8000-000000000000", camille.cookie, { url: ADRESSE })).status).toBe(404);
     expect((await store.getRecipe(row.id))?.recipe.image).toBeUndefined();
+    expect((await definirAdresse(row.id, lea.cookie, { url: ADRESSE })).status).toBe(200);
+    expect((await store.getRecipe(row.id))?.recipe.image).toBe(ADRESSE);
   });
 });

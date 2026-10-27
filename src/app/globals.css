@@ -40,6 +40,8 @@
 
 body {
   background-color: var(--fond);
+  /* les fiches d'un plat ouvertes en éventail ne doivent pas rendre la page défilable de côté (clip garde l'en-tête collant) */
+  overflow-x: clip;
   /* petits points discrets, comme un papier de carnet */
   background-image: radial-gradient(color-mix(in srgb, var(--ligne) 65%, transparent) 1px, transparent 1.2px);
   background-size: 24px 24px;
@@ -85,6 +87,16 @@ body {
   }
   .btn-danger {
     @apply border border-danger text-danger hover:bg-danger-doux;
+  }
+  /* « Proposer une variante » : vert « herbe », en pointillés, pour dire « ajouter à côté » */
+  .btn-variante,
+  .puce-plus {
+    @apply border-2 border-dashed border-herbe text-herbe;
+    background-color: color-mix(in srgb, var(--herbe) 10%, var(--papier));
+  }
+  .btn-variante:hover,
+  .puce-plus:hover {
+    background-color: color-mix(in srgb, var(--herbe) 18%, var(--papier));
   }
 
   .champ {
@@ -145,6 +157,97 @@ body {
 .carte-liste {
   animation: apparition 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* Plat à plusieurs versions : une pile de fiches derrière la carte. Les fiches montrent la photo des autres
+   versions ; elles s'ouvrent en éventail, comme des livres, au survol (ordinateur) ou à l'appui long (téléphone). */
+.pile {
+  position: relative;
+  height: 100%;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.pile .devant {
+  position: relative;
+  z-index: 3;
+  transition-property: transform, translate, border-color;
+  transition-duration: 0.35s;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.feuille {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.feuille.f1 {
+  z-index: 2;
+  transform: translate(4px, 4px) rotate(0.7deg);
+}
+.feuille.f2 {
+  transform: translate(8px, 8px) rotate(1.5deg);
+}
+/* le nom de la version, écrit sur la tranche visible de la fiche, comme le dos d'un livre */
+.tranche {
+  position: absolute;
+  top: 3.5rem;
+  writing-mode: vertical-rl;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--encre) 85%, transparent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.5rem 0.125rem;
+  white-space: nowrap;
+  max-height: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.25s 0.12s;
+}
+.f1 .tranche {
+  left: 0.55rem;
+  transform: rotate(180deg);
+}
+.f2 .tranche {
+  right: 0.55rem;
+}
+.pile.ouvert .devant {
+  transform: translateY(-4px);
+}
+.pile.ouvert .f1 {
+  transform: translate(-15%, -10px) rotate(-7deg);
+}
+.pile.ouvert .f2 {
+  transform: translate(15%, -10px) rotate(7deg);
+}
+.pile.ouvert .tranche {
+  opacity: 1;
+}
+/* la carte ouverte passe au-dessus de ses voisines, pour que ses fiches ne soient pas cachées */
+.carte-liste:has(.pile.ouvert) {
+  position: relative;
+  z-index: 10;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pile:hover .devant {
+    transform: translateY(-4px);
+  }
+  .pile:hover .f1 {
+    transform: translate(-15%, -10px) rotate(-7deg);
+  }
+  .pile:hover .f2 {
+    transform: translate(15%, -10px) rotate(7deg);
+  }
+  .pile:hover .tranche {
+    opacity: 1;
+  }
+  .carte-liste:has(.pile:hover) {
+    position: relative;
+    z-index: 10;
+  }
 }
 
 @keyframes pop {

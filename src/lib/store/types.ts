@@ -10,7 +10,9 @@ export type RecipeRow = {
   authorId: string | null;
   createdAt: string;
   updatedAt: string;
-  /** `recipe.id` vaut toujours `id`. */
+  /** Id de la recette de référence du plat si c'est une variante, sinon `null` (jamais une autre variante). */
+  varianteDe: string | null;
+  /** `recipe.id` vaut toujours `id`. `recipe.variante_de` n'y est jamais : le lien est `varianteDe`. */
   recipe: Recipe;
 };
 
@@ -34,8 +36,17 @@ export type ClaimResult =
   | { status: "invalide" | "expiree" | "utilisee" };
 
 export interface Store {
-  insertRecipe(input: { status: Status; authorId: string | null; recipe: Recipe }): Promise<RecipeRow>;
-  updateRecipe(id: string, patch: { status?: Status; recipe?: Recipe }): Promise<RecipeRow | null>;
+  insertRecipe(input: {
+    status: Status;
+    authorId: string | null;
+    recipe: Recipe;
+    varianteDe?: string | null;
+  }): Promise<RecipeRow>;
+  /** Une clé absente du patch ne change rien ; `varianteDe: null` détache la recette. */
+  updateRecipe(
+    id: string,
+    patch: { status?: Status; recipe?: Recipe; varianteDe?: string | null },
+  ): Promise<RecipeRow | null>;
   getRecipe(idOrSlug: string): Promise<RecipeRow | null>;
   listRecipes(filter?: { status?: Status }): Promise<RecipeRow[]>;
   deleteRecipe(id: string): Promise<boolean>;

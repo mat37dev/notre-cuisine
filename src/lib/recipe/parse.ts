@@ -4,6 +4,7 @@ import {
   CATEGORIES,
   MAX_ETAPES,
   MAX_INGREDIENTS,
+  MAX_NOM_VARIANTE,
   type Categorie,
   type Etape,
   type Ingredient,
@@ -29,6 +30,8 @@ const ALIAS_CLES: Record<string, string> = {
   timer_seconds: "chrono_secondes",
   photo: "image",
   image_url: "image",
+  variant_of: "variante_de",
+  variant_name: "nom_variante",
 };
 
 const UNITES_ALIAS: Record<Exclude<Unite, "">, string[]> = {
@@ -251,6 +254,16 @@ export function parseRecipeBlock(text: string): ParseResult {
     const adresse = adresseImageValide(image);
     if (adresse) recipe.image = adresse;
     else warnings.push("L'image est ignorée : il faut une adresse commençant par https:// (500 caractères au maximum).");
+  }
+  // Pour ces deux champs, « absent » (garder ce qui existe) n'est pas la même chose que null (retirer).
+  if (brut.variante_de === null) recipe.variante_de = null;
+  else if (texteOuVide(brut.variante_de)) recipe.variante_de = texteOuVide(brut.variante_de);
+  if ("nom_variante" in brut) {
+    const nom = texteOuVide(brut.nom_variante);
+    recipe.nom_variante = nom ? nom.slice(0, MAX_NOM_VARIANTE) : null;
+    if (nom.length > MAX_NOM_VARIANTE) {
+      warnings.push(`Le nom de la variante est trop long : il est coupé à ${MAX_NOM_VARIANTE} caractères.`);
+    }
   }
   return { ok: true, recipe, warnings };
 }

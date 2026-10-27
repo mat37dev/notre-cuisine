@@ -29,6 +29,40 @@ afterEach(() => {
   window.history.replaceState(null, "", "/");
 });
 
+describe("RecipeGrid : une carte par plat", () => {
+  async function avecVariante(): Promise<RecipeRow[]> {
+    const s = new MemoryStore();
+    const ajouter = (titre: string, categorie: Categorie) =>
+      s.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre, categorie }) });
+    await ajouter("Hachis parmentier", "plat");
+    await ajouter("Crème brûlée", "dessert");
+    await ajouter("Salade niçoise", "salade");
+    const brownie = await ajouter("Brownie", "dessert");
+    await s.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Brownie aux noisettes", categorie: "dessert", tags: ["noisettes"], nom_variante: "Noisettes" }),
+      varianteDe: brownie.id,
+    });
+    return s.listRecipes();
+  }
+
+  test("la variante ne fait pas une carte de plus : 4 cartes, « 4 recettes »", async () => {
+    render(<RecipeGrid rows={await avecVariante()} />);
+    expect(titres()).toEqual(["Brownie", "Salade niçoise", "Crème brûlée", "Hachis parmentier"]);
+    expect(screen.getByRole("status")).toHaveTextContent("4 recettes");
+    expect(screen.getByText("2 versions")).toBeInTheDocument();
+  });
+
+  test("chercher un mot de la variante seulement montre la carte de la variante", async () => {
+    const user = userEvent.setup();
+    render(<RecipeGrid rows={await avecVariante()} />);
+    await user.type(screen.getByRole("searchbox", { name: "Chercher" }), "noisettes");
+    expect(titres()).toEqual(["Brownie aux noisettes"]);
+    expect(screen.getByRole("link", { name: /Brownie aux noisettes/ })).toHaveAttribute("href", "/recettes/brownie-aux-noisettes");
+  });
+});
+
 describe("RecipeGrid : affichage, recherche, catégories, tri", () => {
   test("affiche toutes les recettes, la plus récente d'abord, et leur nombre", async () => {
     render(<RecipeGrid rows={await lignes()} />);

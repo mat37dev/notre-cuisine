@@ -32,13 +32,15 @@ describe("DELETE /api/recettes/[id]", () => {
     expect(await store.getRecipe(row.id)).not.toBeNull();
   });
 
-  test("le membre supprime sa recette, pas celle d'un autre", async () => {
+  test("un membre connecté supprime sa recette, et aussi celle d'un autre", async () => {
     const camille = await personne("Camille", "member");
     const lea = await personne("Léa", "member");
-    const row = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
-    expect((await appeler(row.id, lea.cookie)).status).toBe(403);
-    expect((await appeler(row.id, camille.cookie)).status).toBe(200);
-    expect(await store.getRecipe(row.id)).toBeNull();
+    const a = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
+    const b = await store.insertRecipe({ status: "published", authorId: camille.profil.id, recipe: uneRecette() });
+    expect((await appeler(a.id, camille.cookie)).status).toBe(200);
+    expect(await store.getRecipe(a.id)).toBeNull();
+    expect((await appeler(b.id, lea.cookie)).status).toBe(200);
+    expect(await store.getRecipe(b.id)).toBeNull();
   });
 
   test("l'admin supprime tout ; recette inconnue : 404", async () => {

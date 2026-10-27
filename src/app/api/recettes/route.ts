@@ -6,15 +6,25 @@ import { getStore } from "@/lib/store";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const rows = await listPublished(getStore(), searchParams.get("q") ?? "", searchParams.get("categorie") ?? undefined);
+  const store = getStore();
+  const [rows, toutes] = await Promise.all([
+    listPublished(store, searchParams.get("q") ?? "", searchParams.get("categorie") ?? undefined),
+    listPublished(store),
+  ]);
+  const slugs = new Map(toutes.map((r) => [r.id, r.slug]));
   return json(
-    rows.map((r) => ({
-      id: r.id,
-      slug: r.slug,
-      titre: r.recipe.titre,
-      description: r.recipe.description ?? "",
-      categorie: r.recipe.categorie,
-    })),
+    rows.map((r) => {
+      const reference = r.varianteDe ? slugs.get(r.varianteDe) : undefined;
+      return {
+        id: r.id,
+        slug: r.slug,
+        titre: r.recipe.titre,
+        description: r.recipe.description ?? "",
+        categorie: r.recipe.categorie,
+        ...(r.recipe.nom_variante && { nom_variante: r.recipe.nom_variante }),
+        ...(reference && { variante_de: reference }),
+      };
+    }),
   );
 }
 
@@ -50,13 +60,24 @@ export async function POST(request: Request) {
 
   const res = await submitRecipe(store, viewer, lu.recipe, { ipHash: clientIpHash(request) });
   if (!res.ok) {
+    if (res.code === "variante_introuvable") {
+      return json({ errors: [`La recette « ${lu.recipe.variante_de} » indiquée dans variante_de est introuvable.`] }, 422);
+    }
     const [status, message] = ERREURS[res.code];
     return json({ errors: [message] }, status);
   }
-  const { id, slug, status } = res.value;
+  const { id, slug, status, varianteDe } = res.value;
+  const reference = varianteDe ? await store.getRecipe(varianteDe) : null;
   const misAJour = Boolean(lu.recipe.id);
   return json(
-    { id, slug, status, avertissements: lu.warnings, lien: `/recettes/${slug}` },
+    {
+      id,
+      slug,
+      status,
+      avertissements: lu.warnings,
+      lien: `/recettes/${slug}`,
+      ...(reference && { variante_de: { slug: reference.slug, titre: reference.recipe.titre } }),
+    },
     misAJour ? 200 : status === "published" ? 201 : 202,
   );
 }

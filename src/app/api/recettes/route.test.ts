@@ -57,6 +57,25 @@ describe("GET /api/recettes", () => {
     const parCat = await (await getList(new Request("https://x.test/api/recettes?categorie=dessert"))).json();
     expect(parCat.map((r: { titre: string }) => r.titre)).toEqual(["Flan"]);
   });
+
+  test("une entrée par recette ; une variante donne son nom et le slug de sa référence", async () => {
+    const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre: "Lasagnes" }) });
+    await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Lasagnes végé", nom_variante: "Végétarienne" }),
+      varianteDe: a.id,
+    });
+    const liste = await (await getList(new Request("https://x.test/api/recettes"))).json();
+    expect(liste).toHaveLength(2);
+    expect(liste.find((r: { slug: string }) => r.slug === "lasagnes-vege")).toMatchObject({
+      nom_variante: "Végétarienne",
+      variante_de: "lasagnes",
+    });
+    const reference = liste.find((r: { slug: string }) => r.slug === "lasagnes");
+    expect("variante_de" in reference).toBe(false);
+    expect("nom_variante" in reference).toBe(false);
+  });
 });
 
 describe("GET /api/recettes/[id]", () => {
@@ -77,6 +96,31 @@ describe("GET /api/recettes/[id]", () => {
     await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette() });
     expect((await appeler("salade-burrata")).status).toBe(404);
     expect((await appeler("inconnue")).status).toBe(404);
+  });
+
+  test("donne les autres versions du plat ; une variante donne aussi variante_de", async () => {
+    const a = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette({ titre: "Lasagnes" }) });
+    const b = await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Lasagnes végé", nom_variante: "Végétarienne" }),
+      varianteDe: a.id,
+    });
+    await store.insertRecipe({ status: "pending", authorId: null, recipe: uneRecette({ titre: "Cachée" }), varianteDe: a.id });
+
+    const ja = await (await appeler("lasagnes")).json();
+    expect("variante_de" in ja).toBe(false);
+    expect(ja.variantes).toEqual([
+      { id: b.id, slug: "lasagnes-vege", titre: "Lasagnes végé", nom_variante: "Végétarienne", lien: "https://x.test/recettes/lasagnes-vege" },
+    ]);
+    const jb = await (await appeler("lasagnes-vege")).json();
+    expect(jb.variante_de).toBe("lasagnes");
+    expect(jb.variantes).toEqual([{ id: a.id, slug: "lasagnes", titre: "Lasagnes", lien: "https://x.test/recettes/lasagnes" }]);
+  });
+
+  test("une recette seule a une liste de variantes vide", async () => {
+    await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+    expect((await (await appeler("salade-burrata")).json()).variantes).toEqual([]);
   });
 });
 
@@ -100,6 +144,26 @@ describe("POST /api/recettes", () => {
     const res = await post(fence({ ...uneRecette({ titre: "Corrigée" }), id: cree.id }), { cookie });
     expect(res.status).toBe(200);
     expect((await store.getRecipe(cree.id))?.recipe.titre).toBe("Corrigée");
+  });
+
+  test("variante d'une recette : 201, avec la recette de référence (slug et titre)", async () => {
+    const cookie = await cookieMembre();
+    await post(fence(uneRecette({ titre: "Lasagnes" })), { cookie });
+    const res = await post(fence({ ...uneRecette({ titre: "Lasagnes végé" }), variante_de: "lasagnes" }), { cookie });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({ variante_de: { slug: "lasagnes", titre: "Lasagnes" } });
+  });
+
+  test("variante_de inconnue : 422 avec un message qui dit laquelle", async () => {
+    const res = await post(fence({ ...uneRecette(), variante_de: "inconnue" }), { cookie: await cookieMembre() });
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({ errors: ["La recette « inconnue » indiquée dans variante_de est introuvable."] });
+    expect(await store.listRecipes()).toHaveLength(0);
+  });
+
+  test("une recette indépendante n'a pas de champ variante_de dans la réponse", async () => {
+    const res = await post(fence(uneRecette()), { cookie: await cookieMembre() });
+    expect("variante_de" in (await res.json())).toBe(false);
   });
 
   test("les avertissements du lecteur sont renvoyés", async () => {

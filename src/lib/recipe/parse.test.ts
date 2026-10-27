@@ -275,3 +275,37 @@ describe("image de présentation", () => {
     expect(r.warnings.join(" ")).toContain("image");
   });
 });
+
+describe("variantes", () => {
+  test("lit variante_de et nom_variante", () => {
+    const r = ok(fence({ ...base, variante_de: "lasagnes", nom_variante: "Végétarienne" }));
+    expect(r.recipe.variante_de).toBe("lasagnes");
+    expect(r.recipe.nom_variante).toBe("Végétarienne");
+  });
+
+  test("comprend les alias anglais variant_of et variant_name", () => {
+    const r = ok(fence({ ...base, variant_of: "lasagnes", variant_name: "Végétarienne" }));
+    expect(r.recipe.variante_de).toBe("lasagnes");
+    expect(r.recipe.nom_variante).toBe("Végétarienne");
+  });
+
+  test("null est gardé (détacher, retirer le nom), un champ absent reste absent", () => {
+    const nul = ok(fence({ ...base, variante_de: null, nom_variante: null }));
+    expect(nul.recipe.variante_de).toBeNull();
+    expect(nul.recipe.nom_variante).toBeNull();
+    const absent = ok(fence(base));
+    expect("variante_de" in absent.recipe).toBe(false);
+    expect("nom_variante" in absent.recipe).toBe(false);
+  });
+
+  test("nom_variante vide vaut null ; trop long, il est coupé à 40 caractères avec un avertissement", () => {
+    expect(ok(fence({ ...base, nom_variante: "  " })).recipe.nom_variante).toBeNull();
+    const long = ok(fence({ ...base, nom_variante: "x".repeat(50) }));
+    expect(long.recipe.nom_variante).toHaveLength(40);
+    expect(long.warnings.join(" ")).toContain("40 caractères");
+  });
+
+  test("variante_de vide est ignoré", () => {
+    expect("variante_de" in ok(fence({ ...base, variante_de: "  " })).recipe).toBe(false);
+  });
+});
