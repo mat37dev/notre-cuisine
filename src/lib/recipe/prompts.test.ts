@@ -2,7 +2,15 @@ import { describe, expect, test } from "vitest";
 import { MemoryStore } from "../store/memory";
 import { uneRecette } from "./fixtures";
 import { parseRecipeBlock } from "./parse";
-import { buildEditPrompt, documentationClaude, EXEMPLE_RECETTE, instructionsClaude } from "./prompts";
+import { slugify } from "./slug";
+import {
+  buildEditPrompt,
+  buildVariantPrompt,
+  documentationClaude,
+  EXEMPLE_RECETTE,
+  EXEMPLE_VARIANTE,
+  instructionsClaude,
+} from "./prompts";
 import { CATEGORIES, UNITES } from "./types";
 
 describe("EXEMPLE_RECETTE et instructionsClaude", () => {
@@ -123,5 +131,70 @@ describe("documentationClaude", () => {
 
   test("les instructions à coller renvoient vers la documentation", () => {
     expect(instructionsClaude("https://x.test")).toContain("https://x.test/docs");
+  });
+});
+
+describe("variantes", () => {
+  const doc = documentationClaude("https://x.test");
+
+  test("EXEMPLE_VARIANTE se relit avec le parseur, avec variante_de et nom_variante, sans le jambon", () => {
+    const r = parseRecipeBlock("```json\n" + JSON.stringify(EXEMPLE_VARIANTE) + "\n```");
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.warnings).toEqual([]);
+      expect(r.recipe.variante_de).toBe("salade-italienne-a-la-burrata");
+      expect(slugify(EXEMPLE_RECETTE.titre)).toBe(r.recipe.variante_de);
+      expect(r.recipe.nom_variante).toBe("Végétarienne");
+      expect(r.recipe.ingredients.map((i) => i.id)).not.toContain("jambon");
+      expect(JSON.stringify(r.recipe.etapes)).not.toContain("{{jambon}}");
+    }
+  });
+
+  test("la documentation explique les variantes : champs, section dédiée, réponses de l'API, refus", () => {
+    expect(doc).toContain("variante_de");
+    expect(doc).toContain("nom_variante");
+    expect(doc).toContain("## Proposer une variante");
+    expect(doc).toContain('"variantes"');
+    expect(doc).toContain("indiquée dans variante_de est introuvable");
+    expect(doc).toContain(JSON.stringify(EXEMPLE_VARIANTE, null, 2));
+  });
+
+  test("la section « Modifier une recette » dit comment détacher une variante", () => {
+    const section = doc.split("## Modifier une recette")[1].split("\n## ")[0];
+    expect(section).toContain('"variante_de": null');
+  });
+
+  test("les instructions à coller ont un point sur les variantes", () => {
+    const texte = instructionsClaude("https://x.test");
+    expect(texte).toContain("4. Quand je veux une variante");
+    expect(texte).toContain("variante_de");
+    expect(texte).toContain("nom_variante");
+  });
+
+  test("buildVariantPrompt : demande une variante du slug, sans l'id de la recette d'origine", async () => {
+    const store = new MemoryStore();
+    const row = await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Gratin", nom_variante: "Classique" }),
+    });
+    const prompt = buildVariantPrompt(row);
+    expect(prompt).toContain('"variante_de": "gratin"');
+    expect(prompt).not.toContain(row.id);
+    expect(prompt).not.toContain("Classique");
+    expect(prompt.trimEnd()).toMatch(/Ce que je veux changer :$/);
+    const r = parseRecipeBlock(prompt);
+    expect(r.ok && r.recipe.id).toBeFalsy();
+    expect(r.ok && r.recipe.titre).toBe("Gratin");
+  });
+
+  test("buildEditPrompt d'une variante garde variante_de dans le bloc", async () => {
+    const store = new MemoryStore();
+    const row = await store.insertRecipe({ status: "published", authorId: null, recipe: uneRecette() });
+    const prompt = buildEditPrompt(row, "lasagnes");
+    expect(prompt).toContain(row.id);
+    const r = parseRecipeBlock(prompt);
+    expect(r.ok && r.recipe.variante_de).toBe("lasagnes");
+    expect(buildEditPrompt(row)).not.toContain("variante_de");
   });
 });
