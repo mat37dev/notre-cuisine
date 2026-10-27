@@ -89,13 +89,11 @@ body {
     @apply border border-danger text-danger hover:bg-danger-doux;
   }
   /* « Proposer une variante » : vert « herbe », en pointillés, pour dire « ajouter à côté » */
-  .btn-variante,
-  .puce-plus {
+  .btn-variante {
     @apply border-2 border-dashed border-herbe text-herbe;
     background-color: color-mix(in srgb, var(--herbe) 10%, var(--papier));
   }
-  .btn-variante:hover,
-  .puce-plus:hover {
+  .btn-variante:hover {
     background-color: color-mix(in srgb, var(--herbe) 18%, var(--papier));
   }
 
@@ -160,12 +158,10 @@ body {
 }
 
 /* Plat à plusieurs versions : une pile de fiches derrière la carte. Les fiches montrent la photo des autres
-   versions ; elles s'ouvrent en éventail, comme des livres, au survol (ordinateur) ou à l'appui long (téléphone). */
+   versions ; sur ordinateur, elles s'ouvrent en éventail, comme des livres, au survol. */
 .pile {
   position: relative;
   height: 100%;
-  -webkit-touch-callout: none;
-  user-select: none;
 }
 .pile .devant {
   position: relative;
@@ -214,23 +210,6 @@ body {
 .f2 .tranche {
   right: 0.55rem;
 }
-.pile.ouvert .devant {
-  transform: translateY(-4px);
-}
-.pile.ouvert .f1 {
-  transform: translate(-15%, -10px) rotate(-7deg);
-}
-.pile.ouvert .f2 {
-  transform: translate(15%, -10px) rotate(7deg);
-}
-.pile.ouvert .tranche {
-  opacity: 1;
-}
-/* la carte ouverte passe au-dessus de ses voisines, pour que ses fiches ne soient pas cachées */
-.carte-liste:has(.pile.ouvert) {
-  position: relative;
-  z-index: 10;
-}
 @media (hover: hover) and (pointer: fine) {
   .pile:hover .devant {
     transform: translateY(-4px);
@@ -244,9 +223,93 @@ body {
   .pile:hover .tranche {
     opacity: 1;
   }
+  /* la carte ouverte passe au-dessus de ses voisines, pour que ses fiches ne soient pas cachées */
   .carte-liste:has(.pile:hover) {
     position: relative;
     z-index: 10;
+  }
+}
+
+/* Versions d'un plat, sous le titre de la recette. Téléphone : une liste qui se déroule quand on ouvre le menu.
+   Ordinateur : une rangée de pastilles, toujours visible. */
+@keyframes deroule {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* aussi pour l'encadré qui s'ouvre sous « Modifier avec Claude » et « Proposer une variante » */
+.deroule {
+  animation: deroule 0.2s ease-out;
+}
+.versions {
+  display: none;
+  flex-direction: column;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--ligne);
+  border-radius: 0.875rem;
+  background: var(--papier);
+}
+.versions.ouvert {
+  display: flex;
+  animation: deroule 0.2s ease-out;
+}
+.version {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px dashed var(--ligne);
+}
+.versions > .version:first-child {
+  border-top: 0;
+}
+.version:active {
+  background: color-mix(in srgb, var(--brand-doux) 50%, var(--papier));
+}
+.version[aria-current="true"] {
+  background: var(--brand-doux);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+@media (width >= 40rem) {
+  .versions,
+  .versions.ouvert {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin: 0 -1.25rem;
+    padding: 0 1.25rem 0.25rem;
+    overflow-x: auto;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    animation: none;
+  }
+  .version,
+  .versions > .version:first-child {
+    gap: 0.375rem;
+    min-height: 2.5rem;
+    padding: 0 1rem 0 0.375rem;
+    border: 1px solid var(--ligne);
+    border-radius: 9999px;
+    background: var(--papier);
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  .version:hover {
+    border-color: var(--brand);
+  }
+  .version[aria-current="true"] {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--sur-brand);
+    box-shadow: none;
   }
 }
 
