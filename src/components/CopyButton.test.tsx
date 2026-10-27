@@ -23,17 +23,3 @@ describe("CopyButton", () => {
     expect(await screen.findByRole("button", { name: "Copie impossible, sélectionne le texte" })).toBeInTheDocument();
   });
 });
-
-describe("CopyButton : apparence", () => {
-  test("base remplace les classes du bouton principal", () => {
-    render(<CopyButton text="x" label="Copier" base="btn btn-variante" />);
-    const bouton = screen.getByRole("button", { name: "Copier" });
-    expect(bouton).toHaveClass("btn-variante");
-    expect(bouton).not.toHaveClass("btn-primary");
-  });
-
-  test("ariaLabel donne un nom lisible à un bouton dont le texte est un symbole", () => {
-    render(<CopyButton text="x" label="＋" ariaLabel="Proposer une variante" />);
-    expect(screen.getByRole("button", { name: "Proposer une variante" })).toHaveTextContent("＋");
-  });
-});

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton } from "@/components/AdminActions";
 import { BackLink } from "@/components/BackLink";
-import { CopyButton } from "@/components/CopyButton";
+import { CopierPourClaude } from "@/components/CopierPourClaude";
 import { RecipeView } from "@/components/RecipeView";
 import { VariantPills, type Version } from "@/components/VariantPills";
 import { buildEditPrompt, buildVariantPrompt } from "@/lib/recipe/prompts";
@@ -48,7 +48,6 @@ export default async function PageRecette({ params }: Props) {
 
   const auteur = row.authorId ? noms.get(row.authorId) : null;
   const modifiable = canEdit(viewer, row);
-  const promptVariante = buildVariantPrompt(row);
 
   return (
     <main className="mx-auto max-w-5xl space-y-5 px-4 py-6">
@@ -60,20 +59,37 @@ export default async function PageRecette({ params }: Props) {
       )}
       <RecipeView
         recipe={row.recipe}
-        entete={<VariantPills versions={versions} courante={row.slug} promptVariante={promptVariante} />}
+        entete={<VariantPills versions={versions} courante={row.slug} />}
       />
       <footer className="space-y-3 border-t border-ligne pt-5">
         {auteur && <p className="text-sm text-muted">Ajoutée par {auteur}</p>}
         <div className="flex flex-wrap gap-2">
           {modifiable && (
             <>
-              <CopyButton text={buildEditPrompt(row, reference?.slug)} label="Modifier avec Claude" />
+              <CopierPourClaude
+                text={buildEditPrompt(row, reference?.slug)}
+                label="Modifier avec Claude"
+                etapes={[
+                  "Ouvre Claude et colle le message.",
+                  "Écris en dessous ce que tu veux changer.",
+                  "Claude te renvoie la recette corrigée : copie-la et colle-la dans « Ajouter ». Elle remplacera celle-ci.",
+                ]}
+              />
               <Link href={`/recettes/${row.slug}/modifier`} className="btn btn-secondary">
                 Modifier ici
               </Link>
             </>
           )}
-          <CopyButton text={promptVariante} label="＋ Proposer une variante" base="btn btn-variante" />
+          <CopierPourClaude
+            text={buildVariantPrompt(row)}
+            label="＋ Proposer une variante"
+            base="btn btn-variante"
+            etapes={[
+              "Ouvre Claude et colle le message.",
+              "Écris en dessous ce que tu veux changer, par exemple « sans viande ».",
+              "Claude te renvoie la variante : copie-la et colle-la dans « Ajouter ». Elle s’ajoutera à côté de cette recette.",
+            ]}
+          />
           {modifiable && (
             <ActionButton
               url={`/api/recettes/${row.id}`}
