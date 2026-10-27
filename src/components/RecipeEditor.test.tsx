@@ -47,6 +47,43 @@ describe("RecipeEditor", () => {
     expect(envoye.etapes[1]).toMatchObject({ chrono_secondes: 150 });
   });
 
+  test("variante : le nom de la variante est modifiable, envoyé sans variante_de (le rattachement est conservé)", async () => {
+    fetchMock.mockReturnValue(reponse(200, { id: "id-1", slug: "salade-burrata", status: "published", avertissements: [] }));
+    const user = userEvent.setup();
+    render(<RecipeEditor recipe={uneRecette({ id: "id-1", nom_variante: "Végé" })} slug="salade-burrata" dansUnGroupe />);
+    const champ = screen.getByLabelText("Nom de la variante");
+    expect(champ).toHaveValue("Végé");
+    await user.clear(champ);
+    await user.type(champ, "Végétarienne");
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const envoye = JSON.parse(JSON.parse(fetchMock.mock.calls[0][1].body).texte.replace(/^```json\n|\n```$/g, ""));
+    expect(envoye.nom_variante).toBe("Végétarienne");
+    expect("variante_de" in envoye).toBe(false);
+  });
+
+  test("variante : vider le nom l'envoie à null (retiré)", async () => {
+    fetchMock.mockReturnValue(reponse(200, { id: "id-1", slug: "salade-burrata", status: "published", avertissements: [] }));
+    const user = userEvent.setup();
+    render(<RecipeEditor recipe={uneRecette({ id: "id-1", nom_variante: "Végé" })} slug="salade-burrata" dansUnGroupe />);
+    await user.clear(screen.getByLabelText("Nom de la variante"));
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const envoye = JSON.parse(JSON.parse(fetchMock.mock.calls[0][1].body).texte.replace(/^```json\n|\n```$/g, ""));
+    expect(envoye.nom_variante).toBeNull();
+  });
+
+  test("recette seule : pas de champ « Nom de la variante », et pas de nom_variante envoyé", async () => {
+    fetchMock.mockReturnValue(reponse(200, { id: "id-1", slug: "salade-burrata", status: "published", avertissements: [] }));
+    const user = userEvent.setup();
+    render(<RecipeEditor recipe={recette()} slug="salade-burrata" />);
+    expect(screen.queryByLabelText("Nom de la variante")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const envoye = JSON.parse(JSON.parse(fetchMock.mock.calls[0][1].body).texte.replace(/^```json\n|\n```$/g, ""));
+    expect("nom_variante" in envoye).toBe(false);
+  });
+
   test("ajoute un ingrédient et une étape, supprime un ingrédient", async () => {
     fetchMock.mockReturnValue(reponse(200, { slug: "salade-burrata" }));
     const user = userEvent.setup();

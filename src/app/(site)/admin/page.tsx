@@ -22,6 +22,14 @@ export default async function PageAdmin() {
     store.listDevices(),
   ]);
   const attente = enAttente.ok ? enAttente.value : [];
+  // pour une variante, le titre de la recette de référence : l'admin valide en connaissant le plat
+  const references = new Map(
+    await Promise.all(
+      attente
+        .filter((r) => r.varianteDe !== null)
+        .map(async (r) => [r.id, (await store.getRecipe(r.varianteDe!))?.recipe.titre] as const),
+    ),
+  );
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-4 py-6">
@@ -41,6 +49,9 @@ export default async function PageAdmin() {
                 <Link href={`/recettes/${row.slug}`} className="titre text-xl underline">
                   {row.recipe.titre}
                 </Link>
+                {references.get(row.id) && (
+                  <p className="text-sm text-muted">Variante de « {references.get(row.id)} »</p>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <ActionButton url={`/api/admin/valider/${row.id}`} label="Valider" style="primaire" />
                   <Link

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LIBELLES_CATEGORIES } from "@/lib/recipe/labels";
 import { ImageField } from "./ImageField";
-import { CATEGORIES, type Categorie, type Recipe, type Unite } from "@/lib/recipe/types";
+import { CATEGORIES, MAX_NOM_VARIANTE, type Categorie, type Recipe, type Unite } from "@/lib/recipe/types";
 
 const LIBELLES_UNITES: Array<[Unite, string]> = [
   ["", "(aucune)"],
@@ -23,9 +23,19 @@ type LigneEtape = { cle: number; titre: string; texte: string; chrono: string };
 
 const champ = "champ";
 
-export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string }) {
+/** `dansUnGroupe` : la recette a d'autres versions du même plat ; son nom de variante devient modifiable. */
+export function RecipeEditor({
+  recipe,
+  slug,
+  dansUnGroupe = false,
+}: {
+  recipe: Recipe;
+  slug: string;
+  dansUnGroupe?: boolean;
+}) {
   const router = useRouter();
   const [titre, setTitre] = useState(recipe.titre);
+  const [nomVariante, setNomVariante] = useState(recipe.nom_variante ?? "");
   const [description, setDescription] = useState(recipe.description ?? "");
   const [portions, setPortions] = useState(String(recipe.portions));
   const [categorie, setCategorie] = useState<Categorie>(recipe.categorie);
@@ -82,6 +92,8 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
           chrono_secondes: s.chrono ? Number(s.chrono) : undefined,
         })),
       notes,
+      // sans variante_de : le site garde le rattachement au plat
+      ...(dansUnGroupe && { nom_variante: nomVariante.trim() || null }),
     };
     setEnvoi(true);
     setErreurs([]);
@@ -109,6 +121,18 @@ export function RecipeEditor({ recipe, slug }: { recipe: Recipe; slug: string })
           Titre
           <input className={champ} value={titre} onChange={(e) => setTitre(e.target.value)} />
         </label>
+        {dansUnGroupe && (
+          <label className="block">
+            Nom de la variante
+            <input
+              className={champ}
+              value={nomVariante}
+              maxLength={MAX_NOM_VARIANTE}
+              placeholder="Végétarienne, Express…"
+              onChange={(e) => setNomVariante(e.target.value)}
+            />
+          </label>
+        )}
         <label className="block">
           Description
           <input className={champ} value={description} onChange={(e) => setDescription(e.target.value)} />

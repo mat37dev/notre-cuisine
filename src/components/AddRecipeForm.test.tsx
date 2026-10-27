@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { EXEMPLE_RECETTE } from "@/lib/recipe/prompts";
+import { EXEMPLE_RECETTE, EXEMPLE_VARIANTE } from "@/lib/recipe/prompts";
 import { AddRecipeForm } from "./AddRecipeForm";
 
 const bloc = (o: unknown) => "```json\n" + JSON.stringify(o) + "\n```";
@@ -93,6 +93,41 @@ describe("AddRecipeForm : envoi", () => {
     expect(url).toBe("/api/recettes");
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body).texte).toContain("Salade italienne à la burrata");
+  });
+
+  test("variante publiée : le message dit à quel plat elle a été ajoutée", async () => {
+    fetchMock.mockReturnValue(
+      reponse(201, {
+        id: "2",
+        slug: "salade-vege",
+        status: "published",
+        avertissements: [],
+        lien: "/recettes/salade-vege",
+        variante_de: { slug: "salade", titre: "Salade italienne" },
+      }),
+    );
+    const user = await coller(bloc(EXEMPLE_VARIANTE));
+    await user.click(screen.getByRole("button", { name: "Envoyer" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Variante ajoutée à « Salade italienne » !"));
+    expect(screen.getByRole("link", { name: "Voir la recette" })).toHaveAttribute("href", "/recettes/salade-vege");
+  });
+
+  test("variante en attente : le message le dit", async () => {
+    fetchMock.mockReturnValue(
+      reponse(202, {
+        id: "2",
+        slug: "salade-vege",
+        status: "pending",
+        avertissements: [],
+        lien: "/recettes/salade-vege",
+        variante_de: { slug: "salade", titre: "Salade italienne" },
+      }),
+    );
+    const user = await coller(bloc(EXEMPLE_VARIANTE));
+    await user.click(screen.getByRole("button", { name: "Envoyer" }));
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent("Variante envoyée : elle est en attente de validation."),
+    );
   });
 
   test("202 : en attente de validation", async () => {
