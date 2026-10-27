@@ -198,3 +198,17 @@ describe("variantes", () => {
     expect(buildEditPrompt(row)).not.toContain("variante_de");
   });
 });
+
+describe("buildVariantPrompt : une image par variante", () => {
+  test("le bloc de départ ne contient pas l'image de l'originale (Claude en choisit une pour la variante)", async () => {
+    const store = new MemoryStore();
+    const row = await store.insertRecipe({
+      status: "published",
+      authorId: null,
+      recipe: uneRecette({ titre: "Gratin", image: "https://img.test/originale.jpg" }),
+    });
+    const prompt = buildVariantPrompt(row);
+    expect(prompt).not.toContain("https://img.test/originale.jpg");
+    expect(prompt).toMatch(/image/i);
+  });
+});

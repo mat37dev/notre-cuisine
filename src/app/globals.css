@@ -40,6 +40,8 @@
 
 body {
   background-color: var(--fond);
+  /* les fiches d'un plat ouvertes en éventail ne doivent pas rendre la page défilable de côté (clip garde l'en-tête collant) */
+  overflow-x: clip;
   /* petits points discrets, comme un papier de carnet */
   background-image: radial-gradient(color-mix(in srgb, var(--ligne) 65%, transparent) 1px, transparent 1.2px);
   background-size: 24px 24px;

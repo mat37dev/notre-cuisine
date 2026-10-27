@@ -230,7 +230,8 @@ export function buildVariantPrompt(row: RecipeRow): string {
   const depart = { ...row.recipe };
   delete depart.id; // sinon Claude le recopie et le site modifierait la recette de départ
   delete depart.nom_variante;
-  return `Voici une recette de notre site. Je veux en faire une variante (une autre façon de faire le même plat, qui s'ajoute à côté sans remplacer l'originale). Renvoie la variante COMPLÈTE dans un seul bloc \`\`\`json, SANS champ "id", avec "variante_de": "${row.slug}" et un "nom_variante" court qui dit ce qui change.
+  delete depart.image; // une image par variante : Claude en choisit une qui montre la variante
+  return `Voici une recette de notre site. Je veux en faire une variante (une autre façon de faire le même plat, qui s'ajoute à côté sans remplacer l'originale). Renvoie la variante COMPLÈTE dans un seul bloc \`\`\`json, SANS champ "id", avec "variante_de": "${row.slug}" et un "nom_variante" court qui dit ce qui change. Pour le champ "image", choisis une photo qui montre la variante, ou laisse-le de côté.
 
 \`\`\`json
 ${JSON.stringify(depart, null, 2)}

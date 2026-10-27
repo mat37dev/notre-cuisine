@@ -319,3 +319,21 @@ describe("variantes", () => {
     expect(await listerGroupe(store, VISITOR, a)).toHaveLength(1);
   });
 });
+
+describe("variantes : référence en attente", () => {
+  test("modifier une variante en gardant variante_de vers une référence en attente : accepté, rien ne change", async () => {
+    const a = valeur(await submitRecipe(store, camille, uneRecette({ titre: "Lasagnes" }), ctx()));
+    const p = valeur(await submitRecipe(store, VISITOR, uneRecette({ variante_de: a.slug }), ctx()));
+    const v = valeur(await submitRecipe(store, camille, uneRecette({ variante_de: a.slug }), ctx()));
+    valeur(await removeRecipe(store, admin, a.id)); // p, en attente, devient la référence
+    const maj = await submitRecipe(store, lea, uneRecette({ id: v.id, titre: "Corrigée", variante_de: p.slug }), ctx());
+    expect(valeur(maj).varianteDe).toBe(p.id);
+    expect(valeur(maj).recipe.titre).toBe("Corrigée");
+  });
+
+  test("modifier une recette en attente en donnant son propre slug : accepté, rien ne change", async () => {
+    const p = valeur(await submitRecipe(store, VISITOR, uneRecette({ titre: "Cachée" }), ctx()));
+    const maj = await submitRecipe(store, camille, uneRecette({ id: p.id, variante_de: p.slug }), ctx());
+    expect(valeur(maj).varianteDe).toBeNull();
+  });
+});

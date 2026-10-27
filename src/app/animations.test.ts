@@ -27,3 +27,11 @@ describe("animations : garde-fous dans la feuille de style", () => {
     expect(css).toMatch(/animation-delay:\s*calc\(var\(--i/);
   });
 });
+
+describe("éventail des variantes : garde-fous", () => {
+  test("les fiches ouvertes ne rendent pas la page défilable de côté sur téléphone", () => {
+    const body = css.match(/\nbody\s*{[^}]*}/);
+    expect(body, "règle body").not.toBeNull();
+    expect(body![0]).toMatch(/overflow-x:\s*clip/);
+  });
+});

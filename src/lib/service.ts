@@ -81,12 +81,16 @@ export async function submitRecipe(
     let varianteDe: string | null | undefined; // undefined : le rattachement ne change pas
     if (recipe.variante_de === null) varianteDe = null;
     else if (recipe.variante_de) {
-      const racine = await resoudreVariante(store, viewer, recipe.variante_de);
-      if (!racine) return fail("variante_introuvable");
-      if (racine.id !== racineDe(existante)) {
-        varianteDe = racine.id;
-        // une référence qui rejoint un autre plat y emmène ses variantes (un seul niveau)
-        for (const v of await variantesDe(store, existante.id)) await store.updateRecipe(v.id, { varianteDe: racine.id });
+      // le plat de la recette elle-même : rien ne change, même si sa référence est en attente (donc invisible)
+      const visee = await store.getRecipe(recipe.variante_de);
+      if (!visee || racineDe(visee) !== racineDe(existante)) {
+        const racine = await resoudreVariante(store, viewer, recipe.variante_de);
+        if (!racine) return fail("variante_introuvable");
+        if (racine.id !== racineDe(existante)) {
+          varianteDe = racine.id;
+          // une référence qui rejoint un autre plat y emmène ses variantes (un seul niveau)
+          for (const v of await variantesDe(store, existante.id)) await store.updateRecipe(v.id, { varianteDe: racine.id });
+        }
       }
     }
     const maj = await store.updateRecipe(existante.id, { recipe: aGarder, varianteDe });
