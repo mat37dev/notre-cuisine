@@ -97,9 +97,11 @@ describe("submitRecipe : mise à jour (id présent)", () => {
     expect(await store.listRecipes()).toHaveLength(1);
   });
 
-  test("le membre ne modifie pas la recette d'un autre", async () => {
+  test("un membre connecté modifie aussi la recette d'un autre", async () => {
     const row = valeur(await submitRecipe(store, camille, uneRecette(), ctx()));
-    expect(await submitRecipe(store, lea, uneRecette({ id: row.id }), ctx())).toEqual({ ok: false, code: "forbidden" });
+    const maj = valeur(await submitRecipe(store, lea, uneRecette({ id: row.id, titre: "Corrigée par Léa" }), ctx()));
+    expect(maj.recipe.titre).toBe("Corrigée par Léa");
+    expect(maj.authorId).toBe(camille.profileId); // l'auteur reste celui qui l'a ajoutée
   });
 
   test("l'admin modifie tout", async () => {
@@ -131,14 +133,15 @@ describe("validation, suppression, listes", () => {
     });
   });
 
-  test("removeRecipe : le membre supprime la sienne, pas celle d'un autre ; l'admin supprime tout", async () => {
+  test("removeRecipe : tout membre connecté et l'admin suppriment, un visiteur non", async () => {
     const a = valeur(await submitRecipe(store, camille, uneRecette({ titre: "A" }), ctx()));
     const b = valeur(await submitRecipe(store, camille, uneRecette({ titre: "B" }), ctx()));
-    expect(await removeRecipe(store, lea, a.id)).toEqual({ ok: false, code: "forbidden" });
+    const c = valeur(await submitRecipe(store, camille, uneRecette({ titre: "C" }), ctx()));
     expect(await removeRecipe(store, VISITOR, a.id)).toEqual({ ok: false, code: "forbidden" });
     expect((await removeRecipe(store, camille, a.id)).ok).toBe(true);
-    expect((await removeRecipe(store, admin, b.id)).ok).toBe(true);
-    expect(await removeRecipe(store, admin, b.id)).toEqual({ ok: false, code: "not_found" });
+    expect((await removeRecipe(store, lea, b.id)).ok).toBe(true);
+    expect((await removeRecipe(store, admin, c.id)).ok).toBe(true);
+    expect(await removeRecipe(store, admin, c.id)).toEqual({ ok: false, code: "not_found" });
   });
 
   test("listPublished exclut les recettes en attente et filtre", async () => {
@@ -171,10 +174,10 @@ describe("canView et canEdit", () => {
     expect(canView(camille, attenteCamille)).toBe(true);
   });
 
-  test("on modifie sa recette ; l'admin modifie tout ; un visiteur rien", async () => {
+  test("tout membre connecté et l'admin modifient tout ; un visiteur rien", async () => {
     const row = valeur(await submitRecipe(store, camille, uneRecette(), ctx()));
     expect(canEdit(camille, row)).toBe(true);
-    expect(canEdit(lea, row)).toBe(false);
+    expect(canEdit(lea, row)).toBe(true);
     expect(canEdit(admin, row)).toBe(true);
     expect(canEdit(VISITOR, row)).toBe(false);
   });
