@@ -50,13 +50,24 @@ export async function POST(request: Request) {
 
   const res = await submitRecipe(store, viewer, lu.recipe, { ipHash: clientIpHash(request) });
   if (!res.ok) {
+    if (res.code === "variante_introuvable") {
+      return json({ errors: [`La recette « ${lu.recipe.variante_de} » indiquée dans variante_de est introuvable.`] }, 422);
+    }
     const [status, message] = ERREURS[res.code];
     return json({ errors: [message] }, status);
   }
-  const { id, slug, status } = res.value;
+  const { id, slug, status, varianteDe } = res.value;
+  const reference = varianteDe ? await store.getRecipe(varianteDe) : null;
   const misAJour = Boolean(lu.recipe.id);
   return json(
-    { id, slug, status, avertissements: lu.warnings, lien: `/recettes/${slug}` },
+    {
+      id,
+      slug,
+      status,
+      avertissements: lu.warnings,
+      lien: `/recettes/${slug}`,
+      ...(reference && { variante_de: { slug: reference.slug, titre: reference.recipe.titre } }),
+    },
     misAJour ? 200 : status === "published" ? 201 : 202,
   );
 }

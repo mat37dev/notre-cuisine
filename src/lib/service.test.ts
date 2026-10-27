@@ -9,6 +9,8 @@ import {
   exportAll,
   listPending,
   listPublished,
+  listerGroupe,
+  racineDe,
   removeRecipe,
   submitRecipe,
 } from "./service";
@@ -192,5 +194,128 @@ describe("image conservée à la mise à jour", () => {
       await submitRecipe(store, camille, uneRecette({ id: row.id, image: "https://exemple.test/b.jpg" }), ctx()),
     );
     expect(maj.recipe.image).toBe("https://exemple.test/b.jpg");
+  });
+});
+
+describe("variantes", () => {
+  const nouvelle = (v: Viewer, partiel: Parameters<typeof uneRecette>[0] = {}) =>
+    submitRecipe(store, v, uneRecette(partiel), ctx());
+
+  test("nouvelle recette avec variante_de (slug) : rattachée à la recette visée", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(lea, { titre: "Lasagnes végé", variante_de: a.slug, nom_variante: "Végétarienne" }));
+    expect(b.varianteDe).toBe(a.id);
+    expect(b.recipe.nom_variante).toBe("Végétarienne");
+    expect("variante_de" in b.recipe).toBe(false);
+  });
+
+  test("variante d'une variante : rattachée à la référence (un seul niveau)", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { titre: "Lasagnes végé", variante_de: a.id }));
+    const c = valeur(await nouvelle(camille, { titre: "Lasagnes express", variante_de: b.slug }));
+    expect(c.varianteDe).toBe(a.id);
+  });
+
+  test("variante_de inconnue : variante_introuvable, rien n'est enregistré", async () => {
+    const r = await nouvelle(camille, { variante_de: "inconnue" });
+    expect(r).toEqual({ ok: false, code: "variante_introuvable" });
+    expect(await store.listRecipes()).toHaveLength(0);
+  });
+
+  test("variante_de qui vise une recette en attente invisible pour un visiteur : variante_introuvable", async () => {
+    const cachee = valeur(await nouvelle(VISITOR, { titre: "Cachée" }));
+    expect(await submitRecipe(store, VISITOR, uneRecette({ variante_de: cachee.slug }), ctx("ip2"))).toEqual({
+      ok: false,
+      code: "variante_introuvable",
+    });
+  });
+
+  test("un visiteur envoie une variante d'une recette publiée : en attente, mais rattachée", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(VISITOR, { variante_de: a.slug }));
+    expect(b.status).toBe("pending");
+    expect(b.varianteDe).toBe(a.id);
+  });
+
+  test("modification sans variante_de ni nom_variante : rattachement et nom conservés", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug, nom_variante: "Végétarienne" }));
+    const maj = valeur(await submitRecipe(store, lea, uneRecette({ id: b.id, titre: "Corrigée" }), ctx()));
+    expect(maj.varianteDe).toBe(a.id);
+    expect(maj.recipe.nom_variante).toBe("Végétarienne");
+    expect(maj.recipe.titre).toBe("Corrigée");
+  });
+
+  test("modification avec variante_de: null : la recette est détachée", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    const maj = valeur(await submitRecipe(store, camille, uneRecette({ id: b.id, variante_de: null }), ctx()));
+    expect(maj.varianteDe).toBeNull();
+  });
+
+  test("modification avec nom_variante: null : le nom est retiré", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug, nom_variante: "Végé" }));
+    const maj = valeur(await submitRecipe(store, camille, uneRecette({ id: b.id, nom_variante: null }), ctx()));
+    expect("nom_variante" in maj.recipe).toBe(false);
+  });
+
+  test("rattacher une référence à un autre plat : ses variantes la suivent", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes A" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    const c = valeur(await nouvelle(camille, { titre: "Lasagnes C" }));
+    const maj = valeur(await submitRecipe(store, camille, uneRecette({ id: a.id, variante_de: c.slug }), ctx()));
+    expect(maj.varianteDe).toBe(c.id);
+    expect((await store.getRecipe(b.id))?.varianteDe).toBe(c.id);
+  });
+
+  test("variante_de qui vise la recette elle-même ou son propre plat : rien ne change, pas d'erreur", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    expect(valeur(await submitRecipe(store, camille, uneRecette({ id: a.id, variante_de: a.slug }), ctx())).varianteDe).toBeNull();
+    expect(valeur(await submitRecipe(store, camille, uneRecette({ id: a.id, variante_de: b.slug }), ctx())).varianteDe).toBeNull();
+    expect(valeur(await submitRecipe(store, camille, uneRecette({ id: b.id, variante_de: b.slug }), ctx())).varianteDe).toBe(a.id);
+    expect((await store.getRecipe(b.id))?.varianteDe).toBe(a.id);
+  });
+
+  test("supprimer la référence : la plus ancienne variante prend sa place, les autres la suivent", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    const c = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    valeur(await removeRecipe(store, camille, a.id));
+    expect((await store.getRecipe(b.id))?.varianteDe).toBeNull();
+    expect((await store.getRecipe(c.id))?.varianteDe).toBe(b.id);
+  });
+
+  test("supprimer la référence dont la plus ancienne variante est en attente : elle devient la référence", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(VISITOR, { variante_de: a.slug }));
+    const c = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    valeur(await removeRecipe(store, admin, a.id));
+    expect((await store.getRecipe(b.id))?.varianteDe).toBeNull();
+    expect((await store.getRecipe(c.id))?.varianteDe).toBe(b.id);
+  });
+
+  test("listerGroupe : référence, puis variantes de la plus ancienne à la plus récente", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    const c = valeur(await nouvelle(camille, { variante_de: a.slug }));
+    await nouvelle(camille, { titre: "Autre plat" });
+    const groupe = await listerGroupe(store, VISITOR, c);
+    expect(groupe.map((r) => r.id)).toEqual([a.id, b.id, c.id]);
+    expect(racineDe(c)).toBe(a.id);
+    expect(racineDe(a)).toBe(a.id);
+  });
+
+  test("listerGroupe : une variante en attente n'apparaît que si c'est la recette demandée", async () => {
+    const a = valeur(await nouvelle(camille, { titre: "Lasagnes" }));
+    const b = valeur(await nouvelle(VISITOR, { variante_de: a.slug }));
+    expect((await listerGroupe(store, VISITOR, a)).map((r) => r.id)).toEqual([a.id]);
+    expect((await listerGroupe(store, admin, b)).map((r) => r.id)).toEqual([a.id, b.id]);
+  });
+
+  test("listerGroupe : une recette seule renvoie une liste d'un élément", async () => {
+    const a = valeur(await nouvelle(camille));
+    expect(await listerGroupe(store, VISITOR, a)).toHaveLength(1);
   });
 });

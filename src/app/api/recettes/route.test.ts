@@ -102,6 +102,26 @@ describe("POST /api/recettes", () => {
     expect((await store.getRecipe(cree.id))?.recipe.titre).toBe("Corrigée");
   });
 
+  test("variante d'une recette : 201, avec la recette de référence (slug et titre)", async () => {
+    const cookie = await cookieMembre();
+    await post(fence(uneRecette({ titre: "Lasagnes" })), { cookie });
+    const res = await post(fence({ ...uneRecette({ titre: "Lasagnes végé" }), variante_de: "lasagnes" }), { cookie });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({ variante_de: { slug: "lasagnes", titre: "Lasagnes" } });
+  });
+
+  test("variante_de inconnue : 422 avec un message qui dit laquelle", async () => {
+    const res = await post(fence({ ...uneRecette(), variante_de: "inconnue" }), { cookie: await cookieMembre() });
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({ errors: ["La recette « inconnue » indiquée dans variante_de est introuvable."] });
+    expect(await store.listRecipes()).toHaveLength(0);
+  });
+
+  test("une recette indépendante n'a pas de champ variante_de dans la réponse", async () => {
+    const res = await post(fence(uneRecette()), { cookie: await cookieMembre() });
+    expect("variante_de" in (await res.json())).toBe(false);
+  });
+
   test("les avertissements du lecteur sont renvoyés", async () => {
     const res = await post(fence({ ...uneRecette(), categorie: "brunch" }));
     expect((await res.json()).avertissements.join(" ")).toContain("catégorie");
